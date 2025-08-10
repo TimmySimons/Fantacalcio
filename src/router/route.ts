@@ -2,18 +2,65 @@ import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '../pages/HomePage.vue';
 import LoginPage from '../pages/LoginPage.vue';
 import { supabase } from '../supabase/supabase.ts';
+import DefaultLayout from '../layouts/DefaultLayout.vue';
+import AdminLayout from '../layouts/AdminLayout.vue';
+import AdminHomePage from '../pages/admin/AdminHomePage.vue';
+import ManageTeamsPage from '../pages/ManageTeamsPage.vue';
+import AdminPlayersPage from '../pages/admin/AdminPlayersPage.vue';
+import AdminGameweeksPage from '../pages/admin/AdminGameweeksPage.vue';
+import AdminManagersPage from '../pages/admin/AdminManagersPage.vue';
+import EmptyLayout from '../layouts/EmptyLayout.vue';
 
 const routes = [
     {
         path: '/login',
         name: 'Login',
-        component: LoginPage
+        component: LoginPage,
+        meta: { layout: EmptyLayout }
     },
     {
         path: '/',
-        name: 'Home',
-        component: HomePage,
-        meta: { requiresAuth: true }
+        meta: { requiresAuth: true, layout: DefaultLayout },
+        redirect: { name: 'Home' },
+        children: [
+            {
+                path: '',
+                name: 'Home',
+                component: HomePage
+            },
+            {
+                path: 'my-team',
+                name: 'ManageTeam',
+                component: ManageTeamsPage
+            }
+        ]
+    },
+    {
+        path: '/admin',
+        meta: { requiresAuth: true, layout: AdminLayout },
+        children: [
+            {
+                path: '',
+                name: 'Admin',
+                //component: AdminHomePage
+                redirect: { name: 'AdminGameweeks' }
+            },
+            {
+                path: 'players',
+                name: 'AdminPlayers',
+                component: AdminPlayersPage
+            },
+            {
+                path: 'gameweeks',
+                name: 'AdminGameweeks',
+                component: AdminGameweeksPage
+            },
+            {
+                path: 'managers',
+                name: 'AdminManagers',
+                component: AdminManagersPage
+            }
+        ]
     }
 ];
 

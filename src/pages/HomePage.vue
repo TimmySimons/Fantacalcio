@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useAuth } from '../supabase/useAuth.ts';
 import { useRouter } from 'vue-router';
+import LeaderBoard from '../components/LeaderBoard.vue';
 
 const { user, signOut } = useAuth();
 
@@ -16,8 +17,11 @@ const signOutHandler = async () => {
 
 <template>
     <div class="container">
-        <div>Hi, welcome home!</div>
-        <button @click="signOutHandler">Sign Out</button>
+        <LeaderBoard />
+        <!--        <div>Hi, welcome home!</div>-->
+        <!--        <button @click="signOutHandler">Sign Out</button>-->
+
+        <!--        <Button label="Verify" />-->
     </div>
 </template>
 

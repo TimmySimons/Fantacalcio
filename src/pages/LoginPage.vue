@@ -27,15 +27,19 @@ function signOutHandler() {
 </script>
 
 <template>
-    <div>
+    <div class="wrapper">
+        <div class>
+            <img alt="logo" src="/pwa-192x192.png" height="140" class="mr-2" />
+        </div>
+
         <div v-if="!user" class="login-form">
-            <h2>Sign In</h2>
-            <input v-model="email" placeholder="Email" />
-            <input type="password" v-model="password" placeholder="Password" />
-            <button @click="signInHandler">Sign In</button>
-            <button @click="signUpHandler">Sign Up</button>
-            <p v-if="authError">{{ authError.message }}</p>
-            <p v-if="loading">Loading...</p>
+            <InputText v-model="email" placeholder="Email" />
+            <InputText type="password" v-model="password" placeholder="Password" />
+            <Button @click="signInHandler" severity="danger">Sign In</Button>
+            <Button @click="signUpHandler" severity="contrast">Sign Up</Button>
+            <p v-if="authError" class="info error">{{ authError.message }}</p>
+            <p v-else-if="loading" class="info">Loading...</p>
+            <p v-else class="info"></p>
         </div>
 
         <div v-else>
@@ -46,10 +50,24 @@ function signOutHandler() {
 </template>
 
 <style scoped>
-.login-form {
+.wrapper {
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    width: 300px;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    gap: 20px;
+
+    .login-form {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 300px;
+    }
+
+    .info {
+        text-align: center;
+        height: 30px;
+    }
 }
 </style>
