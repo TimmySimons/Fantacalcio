@@ -5,9 +5,7 @@ import { ref } from 'vue';
 import { FootballApi } from '../../supabase/football.api.ts';
 import { useToast } from 'primevue';
 
-defineProps<{
-    // items: any[];
-}>();
+defineProps<{}>();
 
 const players = ref<{ id: string; name: string }[] | null>(null);
 
@@ -18,10 +16,9 @@ FootballApi.getPlayers().then((t) => {
 const toast = useToast();
 const editingRows = ref([]);
 const selectedItems = ref([]);
-const itemDialog = ref(false);
 const deleteItemDialog = ref(false);
 const deleteItemsDialog = ref(false);
-const player = ref<{ name: string } | null>(null);
+const player = ref<{ id: string; name: string } | null>(null);
 
 const onRowEditSave = (event: any) => {
     console.log(event);
@@ -58,10 +55,6 @@ const confirmDeleteSelected = () => {
     deleteItemsDialog.value = true;
 };
 
-const confirmDeletePlayer = (p) => {
-    player.value = p;
-    deleteItemDialog.value = true;
-};
 const deletePlayer = () => {
     if (player.value) {
         players.value = players.value?.filter((val) => val.id !== player.value!.id) ?? [];

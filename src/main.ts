@@ -5,16 +5,14 @@ import App from './App.vue';
 import router from './router/route.ts';
 import PrimeVue from 'primevue/config';
 import Aura from '@primeuix/themes/aura';
-import Nora from '@primeuix/themes/nora';
-import Lara from '@primeuix/themes/lara';
 import Button from 'primevue/button';
 import TabMenu from 'primevue/tabmenu';
-import InputText from 'primevue/InputText';
-import Select from 'primevue/Select';
-import Tag from 'primevue/Tag';
-import Toolbar from 'primevue/Toolbar';
-import Dialog from 'primevue/Dialog';
-import Toast from 'primevue/Toast';
+import InputText from 'primevue/inputtext';
+import Select from 'primevue/select';
+import Tag from 'primevue/tag';
+import Toolbar from 'primevue/toolbar';
+import Dialog from 'primevue/dialog';
+import Toast from 'primevue/toast';
 import { ToastService } from 'primevue';
 
 // test comment

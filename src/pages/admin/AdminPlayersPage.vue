@@ -1,6 +1,4 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import { FootballApi } from '../../supabase/football.api.ts';
 import PlayersTable from '../../components/admin/PlayersTable.vue';
 
 // const players = ref<any[] | null>(null);

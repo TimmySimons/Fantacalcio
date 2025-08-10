@@ -1,15 +1,7 @@
-<script setup lang="ts">
-import TileLink from '../../components/TileLink.vue';
-</script>
+<script setup lang="ts"></script>
 
-<template></template>
+<template>
+    <div></div>
+</template>
 
-<style scoped>
-.tiles {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 12px;
-}
-</style>
+<style scoped></style>

@@ -4,7 +4,6 @@ import LoginPage from '../pages/LoginPage.vue';
 import { supabase } from '../supabase/supabase.ts';
 import DefaultLayout from '../layouts/DefaultLayout.vue';
 import AdminLayout from '../layouts/AdminLayout.vue';
-import AdminHomePage from '../pages/admin/AdminHomePage.vue';
 import ManageTeamsPage from '../pages/ManageTeamsPage.vue';
 import AdminPlayersPage from '../pages/admin/AdminPlayersPage.vue';
 import AdminGameweeksPage from '../pages/admin/AdminGameweeksPage.vue';

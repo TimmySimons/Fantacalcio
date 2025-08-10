@@ -1,25 +1,10 @@
 <script setup lang="ts">
-import { useRouter } from 'vue-router';
 import Menubar from 'primevue/menubar';
-
-const router = useRouter();
-
-const goLogin = () => {
-    router.push({ name: 'Login' });
-};
 
 const items = [
     { label: 'Leaderboard', route: { name: 'Home' }, icon: 'pi pi-fw pi-trophy' },
     { label: 'My Team', route: { name: 'ManageTeam' }, icon: 'pi pi-fw pi-sitemap' },
     { label: 'Admin', route: { name: 'Admin' }, icon: 'pi pi-fw pi-cog' }
-    // {
-    //     label: 'Admin',
-    //     icon: 'pi pi-fw pi-ellipsis-h',
-    //     items: [
-    //         { label: 'Players', icon: 'pi pi-cog', to: '/admin/players' },
-    //         { label: 'Gameweeks', icon: 'pi pi-question', to: '/admin/gameweeks' }
-    //     ]
-    // }
 ];
 </script>
 
