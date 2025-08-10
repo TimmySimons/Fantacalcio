@@ -1,0 +1,1 @@
+{"name":"Sjotters","short_name":"Sjotters","description":"My awesome Vue PWA","start_url":"/pwa-sandbox/","display":"standalone","background_color":"#ffffff","theme_color":"#42b883","lang":"en","scope":"/pwa-sandbox/","icons":[{"src":"pwa-192x192.png","sizes":"192x192","type":"image/png"},{"src":"pwa-512x512.png","sizes":"512x512","type":"image/png"}]}
