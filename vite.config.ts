@@ -5,16 +5,16 @@ import { fileURLToPath, URL } from 'node:url';
 
 // https://vite.dev/config/
 export default defineConfig({
-    base: '/pwa-sandbox/',
+    base: '/Fantacalcio/',
     plugins: [
         vue(),
         VitePWA({
             registerType: 'autoUpdate',
             includeAssets: ['favicon.svg', 'favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
             manifest: {
-                name: 'Sjotters',
-                short_name: 'Sjotters',
-                description: 'My awesome Vue PWA',
+                name: 'Fantacalcio',
+                short_name: 'Fantacalcio',
+                description: 'FantacalcioA',
                 theme_color: '#42b883',
                 icons: [
                     {
