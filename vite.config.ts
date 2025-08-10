@@ -15,7 +15,7 @@ export default defineConfig({
                 name: 'Fantacalcio',
                 short_name: 'Fantacalcio',
                 description: 'FantacalcioA',
-                theme_color: '#42b883',
+                theme_color: '#b84242',
                 icons: [
                     {
                         src: 'pwa-192x192.png',
