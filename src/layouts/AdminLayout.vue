@@ -5,7 +5,13 @@ import AdminFooterMenu from '../components/AdminFooterMenu.vue';
 
 <template>
     <div class="full-page admin">
-        <AppHeader />
+        <AppHeader>
+            <template #end>
+                <RouterLink :to="{ name: 'Home' }" class="link">
+                    <i class="pi pi-arrow-circle-left" style="font-size: 1.2rem"></i>
+                </RouterLink>
+            </template>
+        </AppHeader>
         <div class="page-container custom-scrollbar">
             <div class="page-content">
                 <div class="content">
@@ -21,7 +27,7 @@ import AdminFooterMenu from '../components/AdminFooterMenu.vue';
 
 <style scoped>
 .full-page {
-    height: 100vh;
+    height: 100dvh;
     min-height: 0;
     display: flex;
     flex-direction: column;
@@ -46,5 +52,10 @@ import AdminFooterMenu from '../components/AdminFooterMenu.vue';
 
 .content {
     height: 100%;
+}
+
+.pi {
+    color: #64748b;
+    margin-top: 4px;
 }
 </style>

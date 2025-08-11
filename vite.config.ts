@@ -2,12 +2,14 @@ import { defineConfig } from 'vite';
 import vue from '@vitejs/plugin-vue';
 import { VitePWA } from 'vite-plugin-pwa';
 import { fileURLToPath, URL } from 'node:url';
+import svgLoader from 'vite-svg-loader';
 
 // https://vite.dev/config/
 export default defineConfig({
     base: '/Fantacalcio/',
     plugins: [
         vue(),
+        svgLoader(),
         VitePWA({
             registerType: 'autoUpdate',
             includeAssets: ['favicon.svg', 'favicon.ico', 'robots.txt', 'apple-touch-icon.png'],
@@ -26,6 +28,12 @@ export default defineConfig({
                         src: 'pwa-512x512.png',
                         sizes: '512x512',
                         type: 'image/png'
+                    },
+                    {
+                        src: 'pwa-512x512-maskable.png',
+                        sizes: '512x512',
+                        type: 'image/png',
+                        purpose: 'maskable'
                     }
                 ]
             }

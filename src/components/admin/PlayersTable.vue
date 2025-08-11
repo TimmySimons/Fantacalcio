@@ -75,7 +75,13 @@ const deletePlayer = () => {
         <Toolbar class="mb-6">
             <template #end>
                 <div class="button-wrapper">
-                    <Button label="New" icon="pi pi-plus" class="mr-2" @click="openNew" />
+                    <Button
+                        label="New"
+                        icon="pi pi-plus"
+                        class="mr-2"
+                        severity="danger"
+                        @click="openNew"
+                    />
                     <Button
                         label="Delete"
                         icon="pi pi-trash"
@@ -91,7 +97,6 @@ const deletePlayer = () => {
         <DataTable
             :value="players"
             sort-field="name"
-            editMode="row"
             dataKey="id"
             @row-edit-save="onRowEditSave"
             v-model:editingRows="editingRows"
@@ -136,11 +141,6 @@ const deletePlayer = () => {
                     <InputText v-model="data[field]" />
                 </template>
             </Column>
-            <Column
-                :rowEditor="true"
-                style="width: 10%; min-width: 8rem"
-                bodyStyle="text-align:center"
-            ></Column>
         </DataTable>
     </div>
     <Dialog

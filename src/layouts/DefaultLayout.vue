@@ -19,7 +19,7 @@ import AppFooterMenu from '../components/AppFooterMenu.vue';
 
 <style scoped>
 .full-page {
-    height: 100vh;
+    height: 100dvh;
     min-height: 0;
     display: flex;
     flex-direction: column;
@@ -31,8 +31,8 @@ import AppFooterMenu from '../components/AppFooterMenu.vue';
     min-height: 0;
     display: flex;
     flex-direction: column;
-    padding: 18px;
     box-sizing: border-box;
+    overflow-y: auto;
 
     .page-content {
         height: 100%;

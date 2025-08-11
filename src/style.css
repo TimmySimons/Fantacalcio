@@ -13,6 +13,19 @@
   /*-moz-osx-font-smoothing: grayscale;*/
 }
 
+:root {
+  --p-tabmenu-item-active-color: darkred !important;
+  --p-tabmenu-item-active-border-color: darkred !important;
+
+  --p-datatable-header-cell-selected-color: darkred !important;
+  --p-datatable-header-cell-selected-background : #fff8f8 !important;
+}
+
+.svg {
+  height: 16px;
+  width: 16px;
+}
+
 
 /*a {*/
 /*  font-weight: 500;*/
@@ -29,7 +42,7 @@ body {
   /*place-items: center;*/
 
     max-width: 100vw;
-  min-height: 100vh;
+    min-height: 100dvh;
 }
 
 .footer {
@@ -130,4 +143,10 @@ body {
   .label {
     font-size: 0.6em;
   }
+}
+
+
+table, .p-tag-label {
+
+  font-size: 0.6em ;
 }

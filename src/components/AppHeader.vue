@@ -1,20 +1,22 @@
 <script setup lang="ts">
 import Menubar from 'primevue/menubar';
-
-const items = [
-    { label: 'Leaderboard', route: { name: 'Home' }, icon: 'pi pi-fw pi-trophy' },
-    { label: 'My Team', route: { name: 'ManageTeam' }, icon: 'pi pi-fw pi-sitemap' },
-    { label: 'Admin', route: { name: 'Admin' }, icon: 'pi pi-fw pi-cog' }
-];
 </script>
 
 <template>
-    <Menubar :model="items" :router="true">
+    <Menubar :model="[]" :router="true">
         <template #start>
             <div class="start">
                 <img alt="logo" src="/pwa-192x192.png" height="40" class="mr-2" />
                 <span class="text-xl font-bold name">Fantacalcio</span>
             </div>
+        </template>
+
+        <template #end>
+            <slot name="end">
+                <RouterLink :to="{ name: 'Admin' }" class="link">
+                    <i class="pi pi-cog" style="font-size: 1.2rem"></i>
+                </RouterLink>
+            </slot>
         </template>
 
         <template #item="{ item, props }">
@@ -37,5 +39,11 @@ const items = [
 
 .name {
     color: darkred;
+    font-weight: bold;
+}
+
+.pi {
+    color: #64748b;
+    margin-top: 4px;
 }
 </style>
