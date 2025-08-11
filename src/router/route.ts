@@ -4,7 +4,7 @@ import LoginPage from '../pages/LoginPage.vue';
 import { supabase } from '../supabase/supabase.ts';
 import DefaultLayout from '../layouts/DefaultLayout.vue';
 import AdminLayout from '../layouts/AdminLayout.vue';
-import ManageTeamsPage from '../pages/ManageTeamsPage.vue';
+import ManageTeamPage from '../pages/ManageTeamPage.vue';
 import AdminPlayersPage from '../pages/admin/AdminPlayersPage.vue';
 import AdminGameweeksPage from '../pages/admin/AdminGameweeksPage.vue';
 import AdminManagersPage from '../pages/admin/AdminManagersPage.vue';
@@ -30,7 +30,7 @@ const routes = [
             {
                 path: 'my-team',
                 name: 'ManageTeam',
-                component: ManageTeamsPage
+                component: ManageTeamPage
             }
         ]
     },

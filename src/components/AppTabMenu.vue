@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router';
 
 const props = defineProps<{
     items: { label?: string; route: { name: string }; icon?: string }[];
+    tabStyle?: boolean;
 }>();
 
 const route = useRoute();
@@ -20,7 +21,7 @@ watch(
 </script>
 
 <template>
-    <TabMenu :model="items" :activeIndex="activeIndex">
+    <TabMenu :model="items" :activeIndex="activeIndex" :class="{ 'as-tabs': tabStyle }">
         <template #item="{ item, props }">
             <RouterLink v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
                 <a :href="href" v-bind="props.action" @click="navigate">

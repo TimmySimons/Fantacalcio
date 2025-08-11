@@ -1,7 +1,0 @@
-<script setup lang="ts"></script>
-
-<template>
-    <div class="title">My Team</div>
-</template>
-
-<style scoped></style>
