@@ -5,6 +5,8 @@ import AppTabMenu from '../components/AppTabMenu.vue';
 import GameweekBanner from '../components/gameweeks/GameweekBanner.vue';
 import { computed, ref } from 'vue';
 import type { TeamContract } from '../model/team.contract.ts';
+import ShieldIcon from '../assets/icons/soccer-shield.svg';
+import CaretIcon from '../assets/icons/caret.svg';
 
 const tabItems = [
     { label: 'My Team', route: { name: 'ManageTeam' } },
@@ -14,147 +16,147 @@ const tabItems = [
 const players: PlayerContract[] = [
     {
         id: '001',
-        firstName: 'Some Keeper',
+        firstName: 'Robert',
         lastName: 'Sanchez',
         position: PlayerPosition.Goalkeeper,
         team: 'FC Barcelona'
     },
     {
         id: '002',
-        firstName: 'Some Defender',
+        firstName: 'Robert',
         lastName: 'Aina',
         position: PlayerPosition.Defender,
         team: 'FC Barcelona'
     },
     {
         id: '003',
-        firstName: 'Some Defender',
+        firstName: 'Robert',
         lastName: 'Van de Ven',
         position: PlayerPosition.Defender,
         team: 'FC Barcelona'
     },
     {
         id: '008',
-        firstName: 'Some Defender',
+        firstName: 'Robert',
         lastName: 'De Cuyper',
         position: PlayerPosition.Defender,
         team: 'FC Barcelona'
     },
     {
         id: '009',
-        firstName: 'Some Defender',
+        firstName: 'Robert',
         lastName: 'Gvardiol',
         position: PlayerPosition.Defender,
         team: 'FC Barcelona'
     },
     {
         id: '010',
-        firstName: 'Some Defender',
+        firstName: 'Robert',
         lastName: 'Vuskovic',
         position: PlayerPosition.Defender,
         team: 'FC Barcelona'
     },
     {
         id: '004',
-        firstName: 'Some Midfielder',
+        firstName: 'Robert',
         lastName: 'Reijnders',
         position: PlayerPosition.Midfielder,
         team: 'FC Barcelona'
     },
     {
         id: '007',
-        firstName: 'Some Midfielder',
+        firstName: 'Robert',
         lastName: 'Sadiki',
         position: PlayerPosition.Midfielder,
         team: 'FC Barcelona'
     },
     {
         id: '022',
-        firstName: 'Some Midfielder',
+        firstName: 'Robert',
         lastName: 'M. Salah',
         position: PlayerPosition.Midfielder,
         team: 'FC Barcelona'
     },
     {
         id: '4005',
-        firstName: 'Some Forward',
+        firstName: 'Robert',
         lastName: 'Bowen',
         position: PlayerPosition.Forward,
         team: 'FC Barcelona'
     },
     {
         id: '3012',
-        firstName: 'Some Forward',
+        firstName: 'Robert',
         lastName: 'Watkins',
         position: PlayerPosition.Forward,
         team: 'FC Barcelona'
     },
     {
         id: '2001',
-        firstName: 'Some Keeper',
+        firstName: 'Robert',
         lastName: 'lll',
         position: PlayerPosition.Goalkeeper,
         team: 'FC Barcelona'
     },
     {
         id: '2002',
-        firstName: 'Some Defender',
+        firstName: 'Robert',
         lastName: 'ooo',
         position: PlayerPosition.Defender,
         team: 'FC Barcelona'
     },
     {
         id: '1003',
-        firstName: 'Some Defender',
+        firstName: 'Robert',
         lastName: 'bbb',
         position: PlayerPosition.Forward,
         team: 'FC Barcelona'
     },
     {
         id: '1008',
-        firstName: 'Some Defender',
+        firstName: 'Robert',
         lastName: 'mmm',
         position: PlayerPosition.Forward,
         team: 'FC Barcelona'
     },
     {
         id: '1009',
-        firstName: 'Some Defender',
+        firstName: 'Robert',
         lastName: 'nnn',
         position: PlayerPosition.Midfielder,
         team: 'FC Barcelona'
     },
     {
         id: '1004',
-        firstName: 'Some Midfielder',
+        firstName: 'Robert',
         lastName: 'ttt',
         position: PlayerPosition.Midfielder,
         team: 'FC Barcelona'
     },
     {
         id: '1007',
-        firstName: 'Some Midfielder',
+        firstName: 'Robert',
         lastName: 'www',
         position: PlayerPosition.Midfielder,
         team: 'FC Barcelona'
     },
     {
         id: '122',
-        firstName: 'Some Midfielder',
+        firstName: 'Robert',
         lastName: 'zzz',
         position: PlayerPosition.Midfielder,
         team: 'FC Barcelona'
     },
     {
         id: '105',
-        firstName: 'Some Forward',
+        firstName: 'Robert',
         lastName: 'yyy',
         position: PlayerPosition.Forward,
         team: 'FC Barcelona'
     },
     {
         id: '112',
-        firstName: 'Some Forward',
+        firstName: 'Robert',
         lastName: 'xxx',
         position: PlayerPosition.Forward,
         team: 'FC Barcelona'
@@ -269,6 +271,15 @@ const onClearField = () => {
     includedForwards.value = [];
     benchSitters.value = [...players];
 };
+
+const onClickMove = () => {
+    console.log('move');
+    if (showBenchBtn.value) {
+        onBench();
+    } else {
+        onClickPitch();
+    }
+};
 </script>
 
 <template>
@@ -288,7 +299,7 @@ const onClearField = () => {
                         Clear Field
                     </div>
                 </div>
-                <div class="pitch card" @click="onClickPitch">
+                <div class="pitch card">
                     <div class="players-layer">
                         <PlayerRow
                             :players="includedKeepers"
@@ -318,14 +329,22 @@ const onClearField = () => {
                             <div class="player"></div>
                         </div>
                     </div>
+                </div>
 
-                    <Button
-                        v-if="showBenchBtn"
-                        class="bench-btn"
-                        label="Bench Player"
-                        icon="pi pi-trash"
-                        @click="onBench"
-                    />
+                <div class="player-info" v-if="selectedPlayer">
+                    <component :is="ShieldIcon" class="svg" />
+                    <div class="info">
+                        <div>{{ selectedPlayer.firstName + ' ' + selectedPlayer.lastName }}</div>
+                        <div>{{ selectedPlayer.position }}</div>
+                        <div>{{ selectedPlayer.team }}</div>
+                    </div>
+                    <div class="scores">
+                        <div>126</div>
+                        <div class="new">+13</div>
+                    </div>
+                    <div class="move" :class="{ remove: showBenchBtn }" @click="onClickMove">
+                        <component :is="CaretIcon" class="svg" />
+                    </div>
                 </div>
             </div>
 
@@ -370,6 +389,7 @@ const onClearField = () => {
         flex-direction: column;
         gap: 8px;
         justify-content: space-between;
+        position: relative;
     }
 
     .card {
@@ -391,13 +411,6 @@ const onClearField = () => {
         flex-direction: column;
         gap: 12px;
         justify-content: space-between;
-    }
-
-    .bench-btn {
-        position: absolute;
-        bottom: 6px;
-        left: 50%;
-        transform: translateX(-50%);
     }
 
     .player {
@@ -457,6 +470,76 @@ const onClearField = () => {
             opacity: 0.5;
             filter: grayscale(1);
             cursor: not-allowed;
+        }
+    }
+}
+
+.player-info {
+    position: absolute;
+    bottom: 6px;
+    left: 50%;
+    transform: translateX(-50%);
+    height: 66px;
+    width: 96%;
+    display: flex;
+    align-items: start;
+    padding: 6px 12px;
+    box-sizing: border-box;
+    font-size: 0.7em;
+    gap: 8px;
+    background: #50945feb;
+    border: 1px solid #0f891b;
+    border-radius: 6px;
+    color: #fff;
+    font-weight: bold;
+    box-shadow: 0px 3px 6px 0px rgb(0 0 0 / 39%);
+
+    .svg {
+        height: 100%;
+        width: auto;
+        fill: white;
+        z-index: 3;
+    }
+
+    > div {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 100%;
+    }
+
+    .info {
+        flex: 1;
+    }
+
+    .scores,
+    .move {
+        height: 100%;
+        width: 50px;
+        border-radius: 6px;
+        background: rgba(0, 0, 0, 0.2);
+        align-items: center;
+        font-size: 1.5em;
+
+        .new {
+            font-size: 0.7em;
+            color: #e8e8e8;
+        }
+
+        .svg {
+            rotate: -90deg;
+            max-width: 30px;
+        }
+    }
+
+    .move {
+        background-color: #093400;
+        border: 1px solid #0f2700;
+
+        &.remove {
+            .svg {
+                rotate: 90deg;
+            }
         }
     }
 }
