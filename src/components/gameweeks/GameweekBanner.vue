@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import type { GameweekContract } from '../../model/Gameweek.contract.ts';
+import type { GameweekContract } from '../../model/gameweek.contract.ts';
 
 const gameweek: GameweekContract = {
     id: '001',
-    week: '32',
-    year: '2025',
+    week: 12,
+    year: 2025,
     startDate: new Date(2025, 7, 10),
     endDate: new Date(2025, 7, 17)
 };
@@ -16,7 +16,6 @@ const gameweek: GameweekContract = {
             <div>GW</div>
             <div>{{ gameweek.week }}</div>
         </div>
-        <!--        <div class="dates">12 Aug - 17 Aug</div>-->
     </div>
 </template>
 

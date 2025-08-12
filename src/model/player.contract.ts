@@ -2,7 +2,7 @@ export enum PlayerPosition {
     Goalkeeper = 'Goalkeeper',
     Defender = 'Defender',
     Midfielder = 'Midfielder',
-    Attacker = 'Attacker'
+    Forward = 'Forward'
 }
 
 export interface PlayerContract {
@@ -11,10 +11,4 @@ export interface PlayerContract {
     lastName: string;
     team: string;
     position: PlayerPosition;
-}
-
-export interface TeamContract {
-    id: string;
-    gameWeek: string;
-    playersIds: string[];
 }

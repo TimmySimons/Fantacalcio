@@ -3,6 +3,13 @@ import { type PlayerContract, PlayerPosition } from '../model/player.contract.ts
 import PlayerRow from '../components/team/PlayerRow.vue';
 import AppTabMenu from '../components/AppTabMenu.vue';
 import GameweekBanner from '../components/gameweeks/GameweekBanner.vue';
+import { computed, ref } from 'vue';
+import type { TeamContract } from '../model/team.contract.ts';
+
+const tabItems = [
+    { label: 'My Team', route: { name: 'ManageTeam' } },
+    { label: 'Points', route: { name: 'ManageTeam' } }
+];
 
 const players: PlayerContract[] = [
     {
@@ -62,32 +69,206 @@ const players: PlayerContract[] = [
         team: 'FC Barcelona'
     },
     {
-        id: '008',
+        id: '022',
         firstName: 'Some Midfielder',
         lastName: 'M. Salah',
         position: PlayerPosition.Midfielder,
         team: 'FC Barcelona'
     },
     {
-        id: '005',
-        firstName: 'Some Attacker',
+        id: '4005',
+        firstName: 'Some Forward',
         lastName: 'Bowen',
-        position: PlayerPosition.Attacker,
+        position: PlayerPosition.Forward,
         team: 'FC Barcelona'
     },
     {
-        id: '012',
-        firstName: 'Some Attacker',
+        id: '3012',
+        firstName: 'Some Forward',
         lastName: 'Watkins',
-        position: PlayerPosition.Attacker,
+        position: PlayerPosition.Forward,
+        team: 'FC Barcelona'
+    },
+    {
+        id: '2001',
+        firstName: 'Some Keeper',
+        lastName: 'lll',
+        position: PlayerPosition.Goalkeeper,
+        team: 'FC Barcelona'
+    },
+    {
+        id: '2002',
+        firstName: 'Some Defender',
+        lastName: 'ooo',
+        position: PlayerPosition.Defender,
+        team: 'FC Barcelona'
+    },
+    {
+        id: '1003',
+        firstName: 'Some Defender',
+        lastName: 'bbb',
+        position: PlayerPosition.Forward,
+        team: 'FC Barcelona'
+    },
+    {
+        id: '1008',
+        firstName: 'Some Defender',
+        lastName: 'mmm',
+        position: PlayerPosition.Forward,
+        team: 'FC Barcelona'
+    },
+    {
+        id: '1009',
+        firstName: 'Some Defender',
+        lastName: 'nnn',
+        position: PlayerPosition.Midfielder,
+        team: 'FC Barcelona'
+    },
+    {
+        id: '1004',
+        firstName: 'Some Midfielder',
+        lastName: 'ttt',
+        position: PlayerPosition.Midfielder,
+        team: 'FC Barcelona'
+    },
+    {
+        id: '1007',
+        firstName: 'Some Midfielder',
+        lastName: 'www',
+        position: PlayerPosition.Midfielder,
+        team: 'FC Barcelona'
+    },
+    {
+        id: '122',
+        firstName: 'Some Midfielder',
+        lastName: 'zzz',
+        position: PlayerPosition.Midfielder,
+        team: 'FC Barcelona'
+    },
+    {
+        id: '105',
+        firstName: 'Some Forward',
+        lastName: 'yyy',
+        position: PlayerPosition.Forward,
+        team: 'FC Barcelona'
+    },
+    {
+        id: '112',
+        firstName: 'Some Forward',
+        lastName: 'xxx',
+        position: PlayerPosition.Forward,
         team: 'FC Barcelona'
     }
 ];
 
-const tabItems = [
-    { label: 'My Team', route: { name: 'ManageTeam' } },
-    { label: 'Points', route: { name: 'ManageTeam' } }
-];
+const team: TeamContract = {
+    id: '001',
+    gameWeek: { id: '001', year: 2025, week: 12, startDate: new Date(), endDate: new Date() },
+    players: players,
+    includedPlayers: []
+};
+
+const selectedPlayer = ref<PlayerContract | undefined>();
+
+const benchSitters = ref<PlayerContract[]>(team.players);
+const includedKeepers = ref<PlayerContract[]>([]);
+const includedDefenders = ref<PlayerContract[]>([]);
+const includedMidfielders = ref<PlayerContract[]>([]);
+const includedForwards = ref<PlayerContract[]>([]);
+
+const positionOrder: Record<string, number> = {
+    Goalkeeper: 1,
+    Defender: 2,
+    Midfielder: 3,
+    Forward: 4
+};
+
+const sortedBench = computed(() =>
+    [...benchSitters.value].sort((a, b) => positionOrder[a.position] - positionOrder[b.position])
+);
+
+const allIncludedPlayers = computed(() => {
+    return includedKeepers.value.concat(
+        includedDefenders.value,
+        includedMidfielders.value,
+        includedForwards.value
+    );
+});
+
+const onClickPitch = () => {
+    if (
+        selectedPlayer.value &&
+        !allIncludedPlayers.value.map((p) => p.id).includes(selectedPlayer.value.id)
+    ) {
+        switch (selectedPlayer.value.position) {
+            case PlayerPosition.Goalkeeper:
+                includedKeepers.value.push(selectedPlayer.value);
+                break;
+            case PlayerPosition.Defender:
+                includedDefenders.value.push(selectedPlayer.value);
+                break;
+            case PlayerPosition.Midfielder:
+                includedMidfielders.value.push(selectedPlayer.value);
+                break;
+            case PlayerPosition.Forward:
+                includedForwards.value.push(selectedPlayer.value);
+                break;
+        }
+
+        benchSitters.value = benchSitters.value.filter((p) => p.id !== selectedPlayer.value!.id);
+    }
+
+    selectedPlayer.value = undefined;
+};
+
+const showBenchBtn = computed(() => {
+    return (
+        selectedPlayer.value &&
+        allIncludedPlayers.value.map((p) => p.id).includes(selectedPlayer.value.id)
+    );
+});
+
+const onBench = () => {
+    if (
+        selectedPlayer.value &&
+        allIncludedPlayers.value.map((p) => p.id).includes(selectedPlayer.value.id)
+    ) {
+        switch (selectedPlayer.value.position) {
+            case PlayerPosition.Goalkeeper:
+                includedKeepers.value = includedKeepers.value.filter(
+                    (p) => p.id !== selectedPlayer.value!.id
+                );
+                break;
+            case PlayerPosition.Defender:
+                includedDefenders.value = includedDefenders.value.filter(
+                    (p) => p.id !== selectedPlayer.value!.id
+                );
+                break;
+            case PlayerPosition.Midfielder:
+                includedMidfielders.value = includedMidfielders.value.filter(
+                    (p) => p.id !== selectedPlayer.value!.id
+                );
+                break;
+            case PlayerPosition.Forward:
+                includedForwards.value = includedForwards.value.filter(
+                    (p) => p.id !== selectedPlayer.value!.id
+                );
+                break;
+        }
+
+        benchSitters.value.push(selectedPlayer.value);
+    }
+
+    selectedPlayer.value = undefined;
+};
+
+const onClearField = () => {
+    includedKeepers.value = [];
+    includedDefenders.value = [];
+    includedMidfielders.value = [];
+    includedForwards.value = [];
+    benchSitters.value = [...players];
+};
 </script>
 
 <template>
@@ -95,41 +276,67 @@ const tabItems = [
         <GameweekBanner />
         <div class="content-container">
             <AppTabMenu :items="tabItems" :tab-style="true" />
+
             <div class="pad">
-                <div class="pitch card">
+                <div class="buttons">
+                    <div class="btn disabled">Load Previous Team</div>
+                    <div
+                        class="btn"
+                        @click="onClearField"
+                        :class="{ disabled: allIncludedPlayers.length === 0 }"
+                    >
+                        Clear Field
+                    </div>
+                </div>
+                <div class="pitch card" @click="onClickPitch">
                     <div class="players-layer">
                         <PlayerRow
-                            :players="
-                                players.filter((p) => p.position === PlayerPosition.Goalkeeper)
-                            "
+                            :players="includedKeepers"
                             group="keepers"
+                            :selected-player="selectedPlayer"
+                            @click="(p) => (selectedPlayer = p)"
                         />
                         <PlayerRow
-                            :players="players.filter((p) => p.position === PlayerPosition.Defender)"
+                            :players="includedDefenders"
                             group="keepers"
+                            :selected-player="selectedPlayer"
+                            @click="(p) => (selectedPlayer = p)"
                         />
                         <PlayerRow
-                            :players="
-                                players.filter((p) => p.position === PlayerPosition.Midfielder)
-                            "
+                            :players="includedMidfielders"
                             group="keepers"
+                            :selected-player="selectedPlayer"
+                            @click="(p) => (selectedPlayer = p)"
                         />
                         <PlayerRow
-                            :players="players.filter((p) => p.position === PlayerPosition.Attacker)"
+                            :players="includedForwards"
                             group="keepers"
+                            :selected-player="selectedPlayer"
+                            @click="(p) => (selectedPlayer = p)"
                         />
                         <div class="position-group hidden">
                             <div class="player"></div>
                         </div>
                     </div>
+
+                    <Button
+                        v-if="showBenchBtn"
+                        class="bench-btn"
+                        label="Bench Player"
+                        icon="pi pi-trash"
+                        @click="onBench"
+                    />
                 </div>
             </div>
 
-            <div class="substitutes">
-                <div class="title">Substitutes</div>
+            <div class="substitutes grid">
                 <PlayerRow
-                    :players="players.filter((p) => p.position === PlayerPosition.Defender)"
-                    group="keepers"
+                    class="scrollable"
+                    :players="sortedBench"
+                    group="bench"
+                    :selected-player="selectedPlayer"
+                    :included-players="allIncludedPlayers"
+                    @click="(p) => (selectedPlayer = p)"
                 />
             </div>
         </div>
@@ -151,14 +358,18 @@ const tabItems = [
         background: #f3f3f3;
         border-radius: 0 24px 0 0;
         gap: 12px;
-        padding: 18px;
-        padding-top: 6px;
+        padding: 6px 18px 12px;
     }
 
     .pad {
         height: 100%;
         width: 100%;
         padding-top: 8px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        justify-content: space-between;
     }
 
     .card {
@@ -174,12 +385,19 @@ const tabItems = [
         left: 0;
         height: 100%;
         width: 100%;
-        padding: 18px;
+        padding: 18px 6px;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
         gap: 12px;
         justify-content: space-between;
+    }
+
+    .bench-btn {
+        position: absolute;
+        bottom: 6px;
+        left: 50%;
+        transform: translateX(-50%);
     }
 
     .player {
@@ -197,22 +415,49 @@ const tabItems = [
 
 .substitutes {
     width: 100%;
-    height: 140px;
+    height: auto;
     border-radius: 12px;
-    padding: 6px 0 10px 0;
+    padding: 10px 2px;
     border: 1px solid #dcdcdc;
     background: #fff;
     box-shadow: 0px 3px 6px 0px rgb(0 0 0 / 9%);
 
-    .title {
-        font-size: 0.8em;
-        margin: 0px 0 12px 0;
-        color: #7c7c7c;
-        font-weight: normal;
+    :deep(.svg) {
+        min-height: 36px;
+        min-width: 36px;
     }
 
-    :deep(.svg) {
-        opacity: 0.8;
+    .scrollable {
+        overflow-y: auto;
+        height: 100px;
+    }
+}
+
+.buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+
+    .btn {
+        flex: 1;
+        min-width: 120px;
+        font-size: 0.6em;
+        height: 22px;
+        border-radius: 6px;
+        background: #fff;
+        border: 1px solid darkred;
+        color: darkred;
+        justify-content: center;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+
+        &.disabled {
+            opacity: 0.5;
+            filter: grayscale(1);
+            cursor: not-allowed;
+        }
     }
 }
 </style>

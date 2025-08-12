@@ -7,6 +7,11 @@
 
 :root {
   --p-primary-color: darkred !important;
+  --p-primary-600: #b10000 !important;
+  --p-primary-500: #c10101 !important;
+  --p-primary-400: #cd0303 !important;
+  --p-primary-300: #da0202 !important;
+
   --p-tabmenu-item-active-color: darkred !important;
   --p-tabmenu-item-active-border-color: darkred !important;
 
