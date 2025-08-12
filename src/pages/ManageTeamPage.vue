@@ -160,6 +160,13 @@ const players: PlayerContract[] = [
         lastName: 'xxx',
         position: PlayerPosition.Forward,
         team: 'FC Barcelona'
+    },
+    {
+        id: '33112',
+        firstName: 'Robert',
+        lastName: 'uuu',
+        position: PlayerPosition.Forward,
+        team: 'FC Barcelona'
     }
 ];
 
@@ -273,13 +280,38 @@ const onClearField = () => {
 };
 
 const onClickMove = () => {
-    console.log('move');
+    if (isSelectedBenchPlayerDisabled.value) return;
     if (showBenchBtn.value) {
         onBench();
     } else {
         onClickPitch();
     }
 };
+
+// TODO: make reusable function
+const isSelectedBenchPlayerDisabled = computed(() => {
+    if (!allIncludedPlayers.value || !selectedPlayer.value) return false;
+    if (allIncludedPlayers.value.map((p) => p.id).includes(selectedPlayer.value.id)) return false;
+
+    if (allIncludedPlayers.value.length >= 11) return true;
+    if (
+        !allIncludedPlayers.value.find((p) => p.position === PlayerPosition.Goalkeeper) &&
+        selectedPlayer.value.position !== PlayerPosition.Goalkeeper &&
+        allIncludedPlayers.value.length >= 10
+    ) {
+        return true;
+    }
+
+    const includedPlayersOfType = allIncludedPlayers.value.filter(
+        (p) => p.position === selectedPlayer.value!.position
+    );
+
+    if (selectedPlayer.value.position === 'Goalkeeper') {
+        if (includedPlayersOfType.length >= 1) return true;
+    } else if (includedPlayersOfType.length >= 4) return true;
+
+    return false;
+});
 </script>
 
 <template>
@@ -342,7 +374,12 @@ const onClickMove = () => {
                         <div>126</div>
                         <div class="new">+13</div>
                     </div>
-                    <div class="move" :class="{ remove: showBenchBtn }" @click="onClickMove">
+                    <div
+                        v-if="!isSelectedBenchPlayerDisabled"
+                        class="move"
+                        :class="{ remove: showBenchBtn }"
+                        @click="onClickMove"
+                    >
                         <component :is="CaretIcon" class="svg" />
                     </div>
                 </div>

@@ -14,8 +14,6 @@ const emit = defineEmits<{
 }>();
 
 const onClickPlayer = (player: PlayerContract) => {
-    if (isDisabled.value) return;
-
     if (props.selectedPlayer?.id === player.id) {
         emit('click', undefined);
     } else {
