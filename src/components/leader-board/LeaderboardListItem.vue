@@ -38,7 +38,7 @@ defineProps<{
 
     .laurel {
         position: absolute;
-        top: 10px;
+        top: 8px;
         left: 12px;
         height: 36px;
         width: 36px;
@@ -52,6 +52,7 @@ defineProps<{
         .ranking {
             color: goldenrod;
             border: none;
+            padding-bottom: 4px;
         }
     }
     &:nth-child(2) {
@@ -62,6 +63,7 @@ defineProps<{
         .ranking {
             color: #696969;
             border: none;
+            padding-bottom: 4px;
         }
     }
     &:nth-child(3) {
@@ -72,6 +74,7 @@ defineProps<{
         .ranking {
             color: #b16437;
             border: none;
+            padding-bottom: 4px;
         }
     }
 }

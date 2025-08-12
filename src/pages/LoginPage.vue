@@ -55,8 +55,7 @@ function signOutHandler() {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    height: 100dvh;
+    height: 100%;
     gap: 20px;
 
     .login-form {

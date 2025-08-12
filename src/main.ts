@@ -14,6 +14,7 @@ import Toolbar from 'primevue/toolbar';
 import Dialog from 'primevue/dialog';
 import Toast from 'primevue/toast';
 import { ToastService } from 'primevue';
+import { ScreenSizeUtil } from './size.ts';
 
 // test comment
 const app = createApp(App);
@@ -39,3 +40,6 @@ app.component('Dialog', Dialog);
 app.component('Toast', Toast);
 
 app.mount('#app');
+
+ScreenSizeUtil.setViewportHeight();
+ScreenSizeUtil.watchViewPortChange();

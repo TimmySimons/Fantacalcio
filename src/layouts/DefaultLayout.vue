@@ -17,8 +17,7 @@ import AppFooterMenu from '../components/AppFooterMenu.vue';
 
 <style scoped>
 .full-page {
-    height: 100vh;
-    height: 100dvh;
+    height: 100%;
     min-height: 0;
     display: flex;
     flex-direction: column;
