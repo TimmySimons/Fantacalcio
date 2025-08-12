@@ -25,7 +25,7 @@ watch(
         <template #item="{ item, props }">
             <RouterLink v-if="item.route" v-slot="{ href, navigate }" :to="item.route" custom>
                 <a :href="href" v-bind="props.action" @click="navigate">
-                    <div :class="item.icon" style="font-size: 1.4rem" />
+                    <div :class="item.icon" style="font-size: 1.2rem" />
                     <div class="label" v-if="item.label">{{ item.label }}</div>
                 </a>
             </RouterLink>

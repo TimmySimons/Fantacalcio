@@ -27,6 +27,7 @@ import AdminFooterMenu from '../components/AdminFooterMenu.vue';
 
 <style scoped>
 .full-page {
+    height: 100vh;
     height: 100dvh;
     min-height: 0;
     display: flex;

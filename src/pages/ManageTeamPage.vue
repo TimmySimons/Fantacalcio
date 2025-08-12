@@ -2,6 +2,7 @@
 import { type PlayerContract, PlayerPosition } from '../model/player.contract.ts';
 import PlayerRow from '../components/team/PlayerRow.vue';
 import AppTabMenu from '../components/AppTabMenu.vue';
+import GameweekBanner from '../components/gameweeks/GameweekBanner.vue';
 
 const players: PlayerContract[] = [
     {
@@ -91,39 +92,46 @@ const tabItems = [
 
 <template>
     <div class="wrapper">
-        <AppTabMenu :items="tabItems" :tab-style="true" />
-        <div class="pad">
-            <div class="pitch card">
-                <div class="players-layer">
-                    <PlayerRow
-                        :players="players.filter((p) => p.position === PlayerPosition.Goalkeeper)"
-                        group="keepers"
-                    />
-                    <PlayerRow
-                        :players="players.filter((p) => p.position === PlayerPosition.Defender)"
-                        group="keepers"
-                    />
-                    <PlayerRow
-                        :players="players.filter((p) => p.position === PlayerPosition.Midfielder)"
-                        group="keepers"
-                    />
-                    <PlayerRow
-                        :players="players.filter((p) => p.position === PlayerPosition.Attacker)"
-                        group="keepers"
-                    />
-                    <div class="position-group hidden">
-                        <div class="player"></div>
+        <GameweekBanner />
+        <div class="content-container">
+            <AppTabMenu :items="tabItems" :tab-style="true" />
+            <div class="pad">
+                <div class="pitch card">
+                    <div class="players-layer">
+                        <PlayerRow
+                            :players="
+                                players.filter((p) => p.position === PlayerPosition.Goalkeeper)
+                            "
+                            group="keepers"
+                        />
+                        <PlayerRow
+                            :players="players.filter((p) => p.position === PlayerPosition.Defender)"
+                            group="keepers"
+                        />
+                        <PlayerRow
+                            :players="
+                                players.filter((p) => p.position === PlayerPosition.Midfielder)
+                            "
+                            group="keepers"
+                        />
+                        <PlayerRow
+                            :players="players.filter((p) => p.position === PlayerPosition.Attacker)"
+                            group="keepers"
+                        />
+                        <div class="position-group hidden">
+                            <div class="player"></div>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
 
-        <div class="substitutes">
-            <div class="title">Substitutes</div>
-            <PlayerRow
-                :players="players.filter((p) => p.position === PlayerPosition.Defender)"
-                group="keepers"
-            />
+            <div class="substitutes">
+                <div class="title">Substitutes</div>
+                <PlayerRow
+                    :players="players.filter((p) => p.position === PlayerPosition.Defender)"
+                    group="keepers"
+                />
+            </div>
         </div>
     </div>
 </template>
@@ -134,12 +142,23 @@ const tabItems = [
     width: 100%;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+
+    .content-container {
+        height: 100%;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        background: #f3f3f3;
+        border-radius: 0 24px 0 0;
+        gap: 12px;
+        padding: 18px;
+        padding-top: 6px;
+    }
 
     .pad {
         height: 100%;
         width: 100%;
-        padding: 0 18px 18px;
+        padding-top: 8px;
     }
 
     .card {
@@ -179,14 +198,17 @@ const tabItems = [
 .substitutes {
     width: 100%;
     height: 140px;
-    background: #bfbfbf;
-    border-radius: 12px 12px 0 0;
-    padding: 8px 0 12px 0;
+    border-radius: 12px;
+    padding: 6px 0 10px 0;
+    border: 1px solid #dcdcdc;
+    background: #fff;
+    box-shadow: 0px 3px 6px 0px rgb(0 0 0 / 9%);
 
     .title {
         font-size: 0.8em;
         margin: 0px 0 12px 0;
-        color: white;
+        color: #7c7c7c;
+        font-weight: normal;
     }
 
     :deep(.svg) {
