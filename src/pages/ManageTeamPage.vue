@@ -525,7 +525,7 @@ const isSelectedBenchPlayerDisabled = computed(() => {
     font-size: 0.7em;
     gap: 8px;
     background: #50945feb;
-    border: 1px solid #0f891b;
+    border: 1px solid #0b6e1547;
     border-radius: 6px;
     color: #fff;
     font-weight: bold;
