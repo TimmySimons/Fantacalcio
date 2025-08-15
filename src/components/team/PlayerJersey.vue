@@ -55,7 +55,7 @@ const isDisabled = computed(() => {
         @click.stop="onClickPlayer(player)"
     >
         <component :is="JerseyIcon" class="svg" />
-        <span class="name">{{ player.lastName }}</span>
+        <span class="name">{{ player.last_name }}</span>
     </div>
 </template>
 

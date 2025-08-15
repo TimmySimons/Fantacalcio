@@ -2,7 +2,12 @@
 import LeaderboardStage from '../components/leader-board/LeaderboardStage.vue';
 import LeaderboardListItem from '../components/leader-board/LeaderboardListItem.vue';
 import type { ManagerContract } from '../model/manager.contract.ts';
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
+import { ScreenSizeUtil } from '../size.ts';
+
+onMounted(() => {
+    ScreenSizeUtil.setViewportHeight();
+});
 
 const managers: ManagerContract[] = [
     {

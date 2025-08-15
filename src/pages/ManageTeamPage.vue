@@ -4,186 +4,56 @@ import PlayerRow from '../components/team/PlayerRow.vue';
 import AppTabMenu from '../components/AppTabMenu.vue';
 import GameweekBanner from '../components/gameweeks/GameweekBanner.vue';
 import { computed, ref } from 'vue';
-import type { TeamContract } from '../model/team.contract.ts';
 import ShieldIcon from '../assets/icons/soccer-shield.svg';
 import CaretIcon from '../assets/icons/caret.svg';
+import { storeToRefs } from 'pinia';
+import { useFootballStore } from '../stores/football.store.ts';
+
+const footballStore = useFootballStore();
+const { gameweek, gameweekTeam, userPlayers } = storeToRefs(footballStore);
+
+footballStore.getUserPlayers();
+footballStore.getCurrentGameweek().then(() => {
+    if (gameweek.value) {
+        footballStore.getGameweekTeam(gameweek.value.id).then(() => {
+            if (!gameweekTeam.value) {
+                footballStore.createGameweekTeam(gameweek.value!.id);
+            }
+        });
+    }
+});
 
 const tabItems = [
     { label: 'My Team', route: { name: 'ManageTeam' } },
     { label: 'Points', route: { name: 'ManageTeam' } }
 ];
 
-const players: PlayerContract[] = [
-    {
-        id: '001',
-        firstName: 'Robert',
-        lastName: 'Sanchez',
-        position: PlayerPosition.Goalkeeper,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '002',
-        firstName: 'Robert',
-        lastName: 'Aina',
-        position: PlayerPosition.Defender,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '003',
-        firstName: 'Robert',
-        lastName: 'Van de Ven',
-        position: PlayerPosition.Defender,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '008',
-        firstName: 'Robert',
-        lastName: 'De Cuyper',
-        position: PlayerPosition.Defender,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '009',
-        firstName: 'Robert',
-        lastName: 'Gvardiol',
-        position: PlayerPosition.Defender,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '010',
-        firstName: 'Robert',
-        lastName: 'Vuskovic',
-        position: PlayerPosition.Defender,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '004',
-        firstName: 'Robert',
-        lastName: 'Reijnders',
-        position: PlayerPosition.Midfielder,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '007',
-        firstName: 'Robert',
-        lastName: 'Sadiki',
-        position: PlayerPosition.Midfielder,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '022',
-        firstName: 'Robert',
-        lastName: 'M. Salah',
-        position: PlayerPosition.Midfielder,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '4005',
-        firstName: 'Robert',
-        lastName: 'Bowen',
-        position: PlayerPosition.Forward,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '3012',
-        firstName: 'Robert',
-        lastName: 'Watkins',
-        position: PlayerPosition.Forward,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '2001',
-        firstName: 'Robert',
-        lastName: 'lll',
-        position: PlayerPosition.Goalkeeper,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '2002',
-        firstName: 'Robert',
-        lastName: 'ooo',
-        position: PlayerPosition.Defender,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '1003',
-        firstName: 'Robert',
-        lastName: 'bbb',
-        position: PlayerPosition.Forward,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '1008',
-        firstName: 'Robert',
-        lastName: 'mmm',
-        position: PlayerPosition.Forward,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '1009',
-        firstName: 'Robert',
-        lastName: 'nnn',
-        position: PlayerPosition.Midfielder,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '1004',
-        firstName: 'Robert',
-        lastName: 'ttt',
-        position: PlayerPosition.Midfielder,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '1007',
-        firstName: 'Robert',
-        lastName: 'www',
-        position: PlayerPosition.Midfielder,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '122',
-        firstName: 'Robert',
-        lastName: 'zzz',
-        position: PlayerPosition.Midfielder,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '105',
-        firstName: 'Robert',
-        lastName: 'yyy',
-        position: PlayerPosition.Forward,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '112',
-        firstName: 'Robert',
-        lastName: 'xxx',
-        position: PlayerPosition.Forward,
-        team: 'FC Barcelona'
-    },
-    {
-        id: '33112',
-        firstName: 'Robert',
-        lastName: 'uuu',
-        position: PlayerPosition.Forward,
-        team: 'FC Barcelona'
-    }
-];
-
-const team: TeamContract = {
-    id: '001',
-    gameWeek: { id: '001', year: 2025, week: 12, startDate: new Date(), endDate: new Date() },
-    players: players,
-    includedPlayers: []
-};
-
 const selectedPlayer = ref<PlayerContract | undefined>();
 
-const benchSitters = ref<PlayerContract[]>(team.players);
-const includedKeepers = ref<PlayerContract[]>([]);
-const includedDefenders = ref<PlayerContract[]>([]);
-const includedMidfielders = ref<PlayerContract[]>([]);
-const includedForwards = ref<PlayerContract[]>([]);
+const includedKeepers = computed<PlayerContract[]>(
+    () =>
+        gameweekTeam.value?.team_players.filter((p) => p.position === PlayerPosition.Goalkeeper) ??
+        []
+);
+const includedDefenders = computed<PlayerContract[]>(
+    () =>
+        gameweekTeam.value?.team_players.filter((p) => p.position === PlayerPosition.Defender) ?? []
+);
+const includedMidfielders = computed<PlayerContract[]>(
+    () =>
+        gameweekTeam.value?.team_players.filter((p) => p.position === PlayerPosition.Midfielder) ??
+        []
+);
+const includedForwards = computed<PlayerContract[]>(
+    () =>
+        gameweekTeam.value?.team_players.filter((p) => p.position === PlayerPosition.Forward) ?? []
+);
+
+const benchSitters = computed(() =>
+    (userPlayers.value ?? [])
+        .filter((p) => !allIncludedPlayers.value.map((p2) => p2.id).includes(p.id))
+        .sort((a, b) => positionOrder[a.position] - positionOrder[b.position])
+);
 
 const positionOrder: Record<string, number> = {
     Goalkeeper: 1,
@@ -191,10 +61,6 @@ const positionOrder: Record<string, number> = {
     Midfielder: 3,
     Forward: 4
 };
-
-const sortedBench = computed(() =>
-    [...benchSitters.value].sort((a, b) => positionOrder[a.position] - positionOrder[b.position])
-);
 
 const allIncludedPlayers = computed(() => {
     return includedKeepers.value.concat(
@@ -204,27 +70,16 @@ const allIncludedPlayers = computed(() => {
     );
 });
 
-const onClickPitch = () => {
+const onAddToTeam = async () => {
     if (
         selectedPlayer.value &&
         !allIncludedPlayers.value.map((p) => p.id).includes(selectedPlayer.value.id)
     ) {
-        switch (selectedPlayer.value.position) {
-            case PlayerPosition.Goalkeeper:
-                includedKeepers.value.push(selectedPlayer.value);
-                break;
-            case PlayerPosition.Defender:
-                includedDefenders.value.push(selectedPlayer.value);
-                break;
-            case PlayerPosition.Midfielder:
-                includedMidfielders.value.push(selectedPlayer.value);
-                break;
-            case PlayerPosition.Forward:
-                includedForwards.value.push(selectedPlayer.value);
-                break;
+        if (gameweek.value && gameweekTeam.value) {
+            await footballStore
+                .addTeamPlayer(gameweekTeam.value.id, selectedPlayer.value.id)
+                .then(() => footballStore.getGameweekTeam(gameweek.value!.id));
         }
-
-        benchSitters.value = benchSitters.value.filter((p) => p.id !== selectedPlayer.value!.id);
     }
 
     selectedPlayer.value = undefined;
@@ -237,46 +92,25 @@ const showBenchBtn = computed(() => {
     );
 });
 
-const onBench = () => {
+const onBench = async () => {
     if (
         selectedPlayer.value &&
         allIncludedPlayers.value.map((p) => p.id).includes(selectedPlayer.value.id)
     ) {
-        switch (selectedPlayer.value.position) {
-            case PlayerPosition.Goalkeeper:
-                includedKeepers.value = includedKeepers.value.filter(
-                    (p) => p.id !== selectedPlayer.value!.id
-                );
-                break;
-            case PlayerPosition.Defender:
-                includedDefenders.value = includedDefenders.value.filter(
-                    (p) => p.id !== selectedPlayer.value!.id
-                );
-                break;
-            case PlayerPosition.Midfielder:
-                includedMidfielders.value = includedMidfielders.value.filter(
-                    (p) => p.id !== selectedPlayer.value!.id
-                );
-                break;
-            case PlayerPosition.Forward:
-                includedForwards.value = includedForwards.value.filter(
-                    (p) => p.id !== selectedPlayer.value!.id
-                );
-                break;
+        if (gameweek.value && gameweekTeam.value) {
+            await footballStore
+                .removeTeamPlayers(gameweekTeam.value.id, [selectedPlayer.value.id])
+                .then(() => footballStore.getGameweekTeam(gameweek.value!.id));
         }
-
-        benchSitters.value.push(selectedPlayer.value);
     }
 
     selectedPlayer.value = undefined;
 };
 
 const onClearField = () => {
-    includedKeepers.value = [];
-    includedDefenders.value = [];
-    includedMidfielders.value = [];
-    includedForwards.value = [];
-    benchSitters.value = [...players];
+    footballStore
+        .removeAllTeamPlayers(gameweekTeam.value!.id)
+        .then(() => footballStore.getGameweekTeam(gameweek.value!.id));
 };
 
 const onClickMove = () => {
@@ -284,7 +118,7 @@ const onClickMove = () => {
     if (showBenchBtn.value) {
         onBench();
     } else {
-        onClickPitch();
+        onAddToTeam();
     }
 };
 
@@ -316,10 +150,9 @@ const isSelectedBenchPlayerDisabled = computed(() => {
 
 <template>
     <div class="wrapper">
-        <GameweekBanner />
+        <GameweekBanner :gameweek="gameweek" :complete="allIncludedPlayers.length === 11" />
         <div class="content-container">
             <AppTabMenu :items="tabItems" :tab-style="true" />
-
             <div class="pad">
                 <div class="buttons">
                     <div class="btn disabled">Load Previous Team</div>
@@ -366,9 +199,9 @@ const isSelectedBenchPlayerDisabled = computed(() => {
                 <div class="player-info" v-if="selectedPlayer">
                     <component :is="ShieldIcon" class="svg" />
                     <div class="info">
-                        <div>{{ selectedPlayer.firstName + ' ' + selectedPlayer.lastName }}</div>
+                        <div>{{ selectedPlayer.first_name + ' ' + selectedPlayer.last_name }}</div>
                         <div>{{ selectedPlayer.position }}</div>
-                        <div>{{ selectedPlayer.team }}</div>
+                        <div>{{ selectedPlayer.club }}</div>
                     </div>
                     <div class="scores">
                         <div>126</div>
@@ -385,10 +218,12 @@ const isSelectedBenchPlayerDisabled = computed(() => {
                 </div>
             </div>
 
-            <div class="substitutes grid">
+            <div class="substitutes grid" :class="{ empty: benchSitters.length === 0 }">
+                <div class="none" v-if="benchSitters.length === 0">No players available</div>
                 <PlayerRow
+                    v-else
                     class="scrollable"
-                    :players="sortedBench"
+                    :players="benchSitters"
                     group="bench"
                     :selected-player="selectedPlayer"
                     :included-players="allIncludedPlayers"
@@ -465,6 +300,7 @@ const isSelectedBenchPlayerDisabled = computed(() => {
 
 .substitutes {
     width: 100%;
+    min-height: 122px;
     height: auto;
     border-radius: 12px;
     padding: 10px 2px;
@@ -480,6 +316,18 @@ const isSelectedBenchPlayerDisabled = computed(() => {
     .scrollable {
         overflow-y: auto;
         height: 100px;
+    }
+
+    .none {
+        text-align: center;
+        font-size: 0.8em;
+        color: #999;
+    }
+
+    &.empty {
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 }
 

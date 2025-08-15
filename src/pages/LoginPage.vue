@@ -2,27 +2,44 @@
 import { ref } from 'vue';
 import { useAuth } from './../supabase/useAuth.ts';
 import { useRouter } from 'vue-router';
+import { storeToRefs } from 'pinia';
+import { useAuthStore } from '../stores/auth.store.ts';
 
-const { user, signUp, signIn, signOut, error: authError, loading } = useAuth();
+const authStore = useAuthStore();
+const { authUser } = storeToRefs(authStore);
+
+const { signUp, signIn, signOut, error: authError, loading } = useAuth();
 const router = useRouter();
 
 const email = ref('');
 const password = ref('');
 
 async function signUpHandler() {
-    await signUp(email.value, password.value);
+    await signUp(email.value, password.value).then(() => {
+        useAuthStore()
+            .getAuthUserAndAppUser()
+            .then(() => {
+                if (authUser.value) {
+                    router.push({ name: 'Home' });
+                }
+            });
+    });
 }
 
 async function signInHandler() {
     signIn(email.value, password.value).then(() => {
-        if (user.value) {
-            router.push({ name: 'Home' });
-        }
+        useAuthStore()
+            .getAuthUserAndAppUser()
+            .then(() => {
+                if (authUser.value) {
+                    router.push({ name: 'Home' });
+                }
+            });
     });
 }
 
 function signOutHandler() {
-    signOut();
+    signOut().then(() => useAuthStore().clearUsers());
 }
 </script>
 
@@ -32,7 +49,7 @@ function signOutHandler() {
             <img alt="logo" src="/pwa-192x192.png" height="140" class="mr-2" />
         </div>
 
-        <div v-if="!user" class="login-form">
+        <div v-if="!authUser" class="login-form">
             <InputText v-model="email" placeholder="Email" />
             <InputText type="password" v-model="password" placeholder="Password" />
             <Button @click="signInHandler" severity="danger">Sign In</Button>
@@ -43,7 +60,7 @@ function signOutHandler() {
         </div>
 
         <div v-else>
-            <h2>Already logged in, {{ user.email }}</h2>
+            <h2>Already logged in, {{ authUser.email }}</h2>
             <button @click="signOutHandler">Sign Out</button>
         </div>
     </div>

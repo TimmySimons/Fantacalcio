@@ -7,8 +7,9 @@ export enum PlayerPosition {
 
 export interface PlayerContract {
     id: string;
-    firstName: string;
-    lastName: string;
-    team: string;
+    first_name: string;
+    last_name: string;
+    club: string;
     position: PlayerPosition;
+    next_opponent_club: string | undefined;
 }

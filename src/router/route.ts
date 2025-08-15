@@ -1,7 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router';
 import HomePage from '../pages/HomePage.vue';
 import LoginPage from '../pages/LoginPage.vue';
-import { supabase } from '../supabase/supabase.ts';
 import DefaultLayout from '../layouts/DefaultLayout.vue';
 import AdminLayout from '../layouts/AdminLayout.vue';
 import ManageTeamPage from '../pages/ManageTeamPage.vue';
@@ -9,6 +8,7 @@ import AdminPlayersPage from '../pages/admin/AdminPlayersPage.vue';
 import AdminGameweeksPage from '../pages/admin/AdminGameweeksPage.vue';
 import AdminManagersPage from '../pages/admin/AdminManagersPage.vue';
 import EmptyLayout from '../layouts/EmptyLayout.vue';
+import { useAuthStore } from '../stores/auth.store.ts';
 
 const routes = [
     {
@@ -69,10 +69,8 @@ const router = createRouter({
 });
 
 router.beforeEach(async (to, _from, next) => {
-    let user = null;
-    await supabase.auth.getSession().then(({ data }) => {
-        user = data.session?.user || null;
-    });
+    await useAuthStore().getAuthUser();
+    let user = useAuthStore().authUser;
 
     if (to.meta.requiresAuth && !user) {
         next({ name: 'Login' });
