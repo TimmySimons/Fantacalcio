@@ -6,7 +6,7 @@ import GameweekDialog from './dialogs/GameweekDialog.vue';
 import dayjs from 'dayjs';
 
 const adminStore = useAdminStore();
-const { players, gameweeks, currentGameweek } = storeToRefs(adminStore);
+const { gameweeks, currentGameweek } = storeToRefs(adminStore);
 
 adminStore.getGameweeks();
 adminStore.getCurrentGameweek();

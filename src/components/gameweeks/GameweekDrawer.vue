@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { GameweekContract } from '../../model/gameweek.contract.ts';
 import { useFootballStore } from '../../stores/football.store.ts';
-import { storeToRefs } from 'pinia';
 import { FootballUtil } from '../../FootballUtil.ts';
 
 defineProps<{
@@ -11,21 +10,10 @@ defineProps<{
 const showDrawer = defineModel<boolean>({ required: false, default: false });
 
 const footballStore = useFootballStore();
-const { gameweek } = storeToRefs(footballStore);
 
 const onSelectGameweek = (gw: GameweekContract) => {
     footballStore.gameweekTeam = undefined;
     footballStore.getGameweek(gw.id).then(() => (showDrawer.value = false));
-
-    // .then(() => {
-    // if (gameweek.value) {
-    //     footballStore.getGameweekTeam(gameweek.value.id).then(() => {
-    //         if (!gameweekTeam.value) {
-    //             footballStore.createGameweekTeam(gameweek.value!.id);
-    //         }
-    //     });
-    // }
-    //});
 };
 </script>
 

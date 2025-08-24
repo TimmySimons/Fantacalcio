@@ -1,11 +1,8 @@
 <script setup lang="ts">
 import type { PlayerContract } from '../../../model/player.contract.ts';
 import SorareIcon from '../../../assets/icons/sorare.svg';
-import { useAdminStore } from '../../../stores/admin.store.ts';
 
-const adminStore = useAdminStore();
-
-const props = defineProps<{
+defineProps<{
     player: PlayerContract;
 }>();
 </script>

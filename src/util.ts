@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 
 export class Util {
-    public static getAge(birthdate: string | Date | undefined): number {
+    public static getAge(birthdate: string | Date | undefined): number | undefined {
         if (!birthdate) return undefined;
 
         const birth = dayjs(birthdate);

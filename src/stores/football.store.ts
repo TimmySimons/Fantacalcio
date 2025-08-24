@@ -20,7 +20,7 @@ export const useFootballStore = defineStore('football-store', {
     getters: {
         nextGameWeek: (state) =>
             state.gameweeks && state.gameweek
-                ? state.gameweeks.find((gw) => +gw.week === +state.gameweek.week + 1)
+                ? state.gameweeks.find((gw) => +gw.week === +state.gameweek!.week + 1)
                 : undefined
     },
     actions: {
