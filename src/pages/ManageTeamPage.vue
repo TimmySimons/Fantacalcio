@@ -20,6 +20,8 @@ footballStore.getCurrentGameweek();
 
 watch(gameweek, () => {
     if (gameweek.value) {
+        gameweekTeam.value = undefined;
+        selectedPlayer.value = undefined;
         footballStore.getGameweekTeam(gameweek.value.id).then(() => {
             if (!gameweekTeam.value) {
                 footballStore.createGameweekTeam(gameweek.value!.id);
