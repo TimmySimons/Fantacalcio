@@ -7,7 +7,8 @@ import Menubar from 'primevue/menubar';
         <template #start>
             <div class="start">
                 <img alt="logo" src="/pwa-192x192.png" height="40" class="mr-2" />
-                <span class="text-xl font-bold name">Fantacalcio</span>
+                <span class="text-xl name">Fantacalcio</span>
+                <span class="admin">Admin</span>
             </div>
         </template>
 
@@ -39,6 +40,10 @@ import Menubar from 'primevue/menubar';
 
 .name {
     color: darkred;
+    font-weight: bold;
+}
+
+.admin {
     font-weight: bold;
 }
 

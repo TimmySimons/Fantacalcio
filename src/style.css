@@ -17,7 +17,11 @@
 
   --p-datatable-header-cell-selected-color: darkred !important;
   --p-datatable-header-cell-selected-background : #fff8f8 !important;
+
+  --p-card-body-padding: 12px !important;
 }
+
+.p-dialog-content { height: 100% }
 
 .p-tabmenu-item-link {
   padding: 8px 12px 4px 12px !important
@@ -67,10 +71,9 @@ body {
 }
 
 .title {
-  margin-bottom: 12px;
+  margin-bottom: 24px;
   font-weight: bold;
   width: 100%;
-  text-align: center;
 }
 
 .p-tabmenu-item-link {
@@ -114,3 +117,46 @@ table, .p-tag-label {
   overflow: hidden;
    box-shadow: 0px 3px 6px 0px rgb(0 0 0 / 39%);
  }
+
+.p-drawer {
+  background: rgba(255, 255, 255, 0.94) !important;
+  border-color: #d6d6d6 !important;
+}
+
+
+.flex {
+  display: flex;
+
+  &.col {
+    flex-direction: column;
+  }
+
+  &.justify-end {
+    justify-content: flex-end;
+  }
+
+  &.gap-4 {
+    gap: 4px;
+  }
+
+  &.gap-8 {
+    gap: 8px;
+  }
+
+  &.items-center {
+    align-items: center;
+  }
+}
+
+.player-dialog {
+  border: none !important;
+
+  .p-dialog-title {
+    color: white;
+    opacity: 0;
+  }
+
+  .p-dialog-close-button {
+    color: white !important;
+  }
+}

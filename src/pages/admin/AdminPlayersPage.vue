@@ -1,20 +1,98 @@
 <script setup lang="ts">
-import PlayersTable from '../../components/admin/PlayersTable.vue';
+import { ref } from 'vue';
+import PlayerDialog from './dialogs/PlayerDialog.vue';
+import PlayerCard from '../../components/admin/players/PlayerCard.vue';
+import { useAdminStore } from '../../stores/admin.store.ts';
+import { storeToRefs } from 'pinia';
+import { SorareApi } from '../../sorare/sorare.api.ts';
 
-// const players = ref<any[] | null>(null);
-//
-// FootballApi.getPlayers().then((t) => {
-//     players.value = t;
-// });
+const adminStore = useAdminStore();
+const { players, goalkeepers, defenders, midfielders, forwards, player } = storeToRefs(adminStore);
+
+adminStore.getPlayers();
+
+const showDialog = ref(false);
+
+const onClickPlayer = (playerId: string) => {
+    player.value = undefined;
+    adminStore.getPlayer(playerId);
+    showDialog.value = true;
+};
+
+const onSave = (sorareSlug: string) => {
+    SorareApi.getPlayerStats(sorareSlug).then((sorareData) => {
+        if (player.value) {
+            adminStore.updatePlayer(player.value.id, sorareSlug, sorareData).then(() => {
+                adminStore.getPlayers();
+                adminStore.getPlayer(player.value!.id);
+            });
+        } else {
+            adminStore.createPlayer(sorareSlug, sorareData).then(() => {
+                adminStore.getPlayers();
+            });
+        }
+    });
+};
+
+const onNewPlayer = () => {
+    player.value = undefined;
+    showDialog.value = true;
+};
 </script>
 
 <template>
-    <!--    <PlayersTable v-if="players" :items="players" />-->
-
     <div class="wrapper">
-        <div class="title">Players</div>
+        <div class="title flex items-center">
+            Players
+            <div class="flex justify-end">
+                <Button label="New Player" @click="onNewPlayer" class="new-btn" />
+            </div>
+        </div>
         <div class="wrapper inner">
-            <PlayersTable v-if="true" />
+            <PlayerDialog v-model="showDialog" :editable="true" :player="player" @save="onSave" />
+
+            <div v-if="players" class="players">
+                <div class="section-header">
+                    Goalkeepers <span>({{ goalkeepers.length }})</span>
+                </div>
+                <PlayerCard
+                    v-for="player in goalkeepers"
+                    :key="player.id"
+                    :player="player"
+                    @click="onClickPlayer(player.id)"
+                />
+
+                <div class="section-header">
+                    Defenders <span>({{ defenders.length }})</span>
+                </div>
+                <PlayerCard
+                    v-for="player in defenders"
+                    :key="player.id"
+                    :player="player"
+                    @click="onClickPlayer(player.id)"
+                />
+
+                <div class="section-header">
+                    Midfielders <span>({{ midfielders.length }})</span>
+                </div>
+                <PlayerCard
+                    v-for="player in midfielders"
+                    :key="player.id"
+                    :player="player"
+                    @click="onClickPlayer(player.id)"
+                />
+
+                <div class="section-header">
+                    Forwards <span>({{ forwards.length }})</span>
+                </div>
+                <PlayerCard
+                    v-for="player in forwards"
+                    :key="player.id"
+                    :player="player"
+                    @click="onClickPlayer(player.id)"
+                />
+            </div>
+
             <div v-else>
                 <i class="pi pi-spin pi-spinner" style="font-size: 12px"></i> Loading...
             </div>
@@ -23,17 +101,33 @@ import PlayersTable from '../../components/admin/PlayersTable.vue';
 </template>
 
 <style scoped>
+.title {
+    justify-content: space-between;
+}
+
 .wrapper {
     height: 100%;
     display: flex;
     flex-direction: column;
     min-height: 0;
 
-    &.inner {
-        background: white;
-        border-radius: 8px;
-        overflow: hidden;
-        border: 1px solid #dee2e6;
+    .players {
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        min-height: 0;
+        gap: 6px;
+        overflow-y: auto;
+    }
+
+    .section-header {
+        font-size: 0.9em;
+        font-weight: bold;
+        margin: 16px 0 4px 0;
+
+        &:first-child {
+            margin-top: 0;
+        }
     }
 }
 </style>

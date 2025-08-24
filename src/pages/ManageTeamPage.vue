@@ -1,19 +1,24 @@
 <script setup lang="ts">
 import { type PlayerContract, PlayerPosition } from '../model/player.contract.ts';
 import PlayerRow from '../components/team/PlayerRow.vue';
-import AppTabMenu from '../components/AppTabMenu.vue';
 import GameweekBanner from '../components/gameweeks/GameweekBanner.vue';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import ShieldIcon from '../assets/icons/soccer-shield.svg';
 import CaretIcon from '../assets/icons/caret.svg';
 import { storeToRefs } from 'pinia';
 import { useFootballStore } from '../stores/football.store.ts';
+import { FootballUtil } from '../FootballUtil.ts';
+import GameweekDrawer from '../components/gameweeks/GameweekDrawer.vue';
+import PlayerDialog from './admin/dialogs/PlayerDialog.vue';
 
 const footballStore = useFootballStore();
-const { gameweek, gameweekTeam, userPlayers } = storeToRefs(footballStore);
+const { gameweeks, gameweek, gameweekTeam, userPlayers, nextGameWeek } = storeToRefs(footballStore);
 
+footballStore.getAllGameweeks();
 footballStore.getUserPlayers();
-footballStore.getCurrentGameweek().then(() => {
+footballStore.getCurrentGameweek();
+
+watch(gameweek, () => {
     if (gameweek.value) {
         footballStore.getGameweekTeam(gameweek.value.id).then(() => {
             if (!gameweekTeam.value) {
@@ -23,10 +28,13 @@ footballStore.getCurrentGameweek().then(() => {
     }
 });
 
-const tabItems = [
-    { label: 'My Team', route: { name: 'ManageTeam' } },
-    { label: 'Points', route: { name: 'ManageTeam' } }
-];
+const isLoading = computed(() => {
+    return !(gameweeks.value && gameweek.value && gameweekTeam.value && userPlayers.value);
+});
+
+const isLockedGameweek = computed(() => {
+    return FootballUtil.isLockedGameweek(gameweek.value);
+});
 
 const selectedPlayer = ref<PlayerContract | undefined>();
 
@@ -146,16 +154,55 @@ const isSelectedBenchPlayerDisabled = computed(() => {
 
     return false;
 });
+
+const showDrawer = ref(false);
+const pointsView = ref(false);
+const showPlayerDialog = ref(false);
+
+const showPoints = computed(() => isLockedGameweek.value || pointsView.value);
+
+const onManageNext = () => {
+    console.log(gameweeks.value);
+    console.log(gameweek.value);
+    console.log(nextGameWeek.value);
+    if (nextGameWeek.value) {
+        footballStore.getGameweek(nextGameWeek.value.id);
+    }
+};
 </script>
 
 <template>
     <div class="wrapper">
-        <GameweekBanner :gameweek="gameweek" :complete="allIncludedPlayers.length === 11" />
-        <div class="content-container">
-            <AppTabMenu :items="tabItems" :tab-style="true" />
+        <GameweekBanner
+            :gameweek="gameweek"
+            :complete="allIncludedPlayers.length === 11"
+            :is-locked="isLockedGameweek"
+            @click-week="showDrawer = true"
+        />
+
+        <GameweekDrawer v-if="gameweeks" :gameweeks="gameweeks" v-model="showDrawer" />
+
+        <div class="content-container" :class="{ 'points-inline': pointsView }">
+            <div
+                class="flex justify-end toggle"
+                :class="{ current: FootballUtil.isCurrentGameweek(gameweek) }"
+            >
+                <template v-if="!isLockedGameweek">
+                    <span>Points</span>
+                    <ToggleSwitch v-model="pointsView" />
+                </template>
+                <template v-else-if="FootballUtil.isCurrentGameweek(gameweek)" class="current">
+                    <span></span>
+                    <span class="now">Now playing!</span>
+                    <span class="next" @click="onManageNext"
+                        >Manage next <i class="pi pi-chevron-right" style="font-size: 8px"></i
+                    ></span>
+                </template>
+            </div>
             <div class="pad">
-                <div class="buttons">
+                <div class="buttons" v-if="!isLockedGameweek">
                     <div class="btn disabled">Load Previous Team</div>
+                    <div class="btn disabled">Fill Random</div>
                     <div
                         class="btn"
                         @click="onClearField"
@@ -165,29 +212,36 @@ const isSelectedBenchPlayerDisabled = computed(() => {
                     </div>
                 </div>
                 <div class="pitch card">
+                    <div class="loading" v-if="isLoading">
+                        <i class="pi pi-spin pi-spinner" style="font-size: 24px"></i>
+                    </div>
                     <div class="players-layer">
                         <PlayerRow
                             :players="includedKeepers"
                             group="keepers"
                             :selected-player="selectedPlayer"
+                            :show-points="showPoints"
                             @click="(p) => (selectedPlayer = p)"
                         />
                         <PlayerRow
                             :players="includedDefenders"
                             group="keepers"
                             :selected-player="selectedPlayer"
+                            :show-points="showPoints"
                             @click="(p) => (selectedPlayer = p)"
                         />
                         <PlayerRow
                             :players="includedMidfielders"
                             group="keepers"
                             :selected-player="selectedPlayer"
+                            :show-points="showPoints"
                             @click="(p) => (selectedPlayer = p)"
                         />
                         <PlayerRow
                             :players="includedForwards"
                             group="keepers"
                             :selected-player="selectedPlayer"
+                            :show-points="showPoints"
                             @click="(p) => (selectedPlayer = p)"
                         />
                         <div class="position-group hidden">
@@ -197,18 +251,32 @@ const isSelectedBenchPlayerDisabled = computed(() => {
                 </div>
 
                 <div class="player-info" v-if="selectedPlayer">
-                    <component :is="ShieldIcon" class="svg" />
+                    <PlayerDialog
+                        v-model="showPlayerDialog"
+                        :editable="false"
+                        :player="selectedPlayer"
+                    />
+
+                    <div class="player-img-wrapper" @click="showPlayerDialog = true">
+                        <img
+                            v-if="selectedPlayer?.picture_url"
+                            :src="selectedPlayer.picture_url"
+                            class="player-img"
+                        />
+                        <component v-else :is="ShieldIcon" class="svg" />
+                    </div>
+
                     <div class="info">
                         <div>{{ selectedPlayer.first_name + ' ' + selectedPlayer.last_name }}</div>
                         <div>{{ selectedPlayer.position }}</div>
-                        <div>{{ selectedPlayer.club }}</div>
+                        <div>{{ selectedPlayer.club_name_short }}</div>
                     </div>
                     <div class="scores">
                         <div>126</div>
                         <div class="new">+13</div>
                     </div>
                     <div
-                        v-if="!isSelectedBenchPlayerDisabled"
+                        v-if="!(isLockedGameweek || isSelectedBenchPlayerDisabled)"
                         class="move"
                         :class="{ remove: showBenchBtn }"
                         @click="onClickMove"
@@ -218,7 +286,11 @@ const isSelectedBenchPlayerDisabled = computed(() => {
                 </div>
             </div>
 
-            <div class="substitutes grid" :class="{ empty: benchSitters.length === 0 }">
+            <div
+                class="substitutes grid"
+                v-if="!isLockedGameweek"
+                :class="{ empty: benchSitters.length === 0 }"
+            >
                 <div class="none" v-if="benchSitters.length === 0">No players available</div>
                 <PlayerRow
                     v-else
@@ -227,6 +299,8 @@ const isSelectedBenchPlayerDisabled = computed(() => {
                     group="bench"
                     :selected-player="selectedPlayer"
                     :included-players="allIncludedPlayers"
+                    :is-disabled="isLockedGameweek"
+                    :show-points="pointsView"
                     @click="(p) => (selectedPlayer = p)"
                 />
             </div>
@@ -248,14 +322,13 @@ const isSelectedBenchPlayerDisabled = computed(() => {
         flex-direction: column;
         background: #f3f3f3;
         border-radius: 0 24px 0 0;
-        gap: 12px;
-        padding: 6px 18px 12px;
+        gap: 8px;
+        padding: 6px 14px 12px;
     }
 
     .pad {
         height: 100%;
         width: 100%;
-        padding-top: 8px;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
@@ -296,11 +369,25 @@ const isSelectedBenchPlayerDisabled = computed(() => {
     overflow: hidden;
     background-image: url('../assets/football-pitch-green.png');
     background-size: 100% 100%;
+    position: relative;
+
+    .loading {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0, 0, 0, 0.5);
+        color: white;
+    }
 }
 
 .substitutes {
     width: 100%;
-    min-height: 122px;
+    min-height: 112px;
     height: auto;
     border-radius: 12px;
     padding: 10px 2px;
@@ -315,7 +402,7 @@ const isSelectedBenchPlayerDisabled = computed(() => {
 
     .scrollable {
         overflow-y: auto;
-        height: 100px;
+        height: 94px;
     }
 
     .none {
@@ -335,10 +422,10 @@ const isSelectedBenchPlayerDisabled = computed(() => {
     display: flex;
     gap: 8px;
     justify-content: flex-end;
+    padding-top: 8px;
 
     .btn {
         flex: 1;
-        min-width: 120px;
         font-size: 0.6em;
         height: 22px;
         border-radius: 6px;
@@ -368,7 +455,7 @@ const isSelectedBenchPlayerDisabled = computed(() => {
     width: 96%;
     display: flex;
     align-items: start;
-    padding: 6px 12px;
+    padding: 6px 6px;
     box-sizing: border-box;
     font-size: 0.7em;
     gap: 8px;
@@ -378,6 +465,20 @@ const isSelectedBenchPlayerDisabled = computed(() => {
     color: #fff;
     font-weight: bold;
     box-shadow: 0px 3px 6px 0px rgb(0 0 0 / 39%);
+
+    .player-img-wrapper {
+        height: 52px;
+        width: 56px;
+        background: rgba(0, 0, 0, 0.2);
+        padding: 4px 4px 0 4px;
+        box-sizing: border-box;
+        border-radius: 6px;
+
+        .player-img {
+            height: 100%;
+            width: auto;
+        }
+    }
 
     .svg {
         height: 100%;
@@ -395,12 +496,19 @@ const isSelectedBenchPlayerDisabled = computed(() => {
 
     .info {
         flex: 1;
+
+        > div {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 110px;
+        }
     }
 
     .scores,
     .move {
         height: 100%;
-        width: 50px;
+        min-width: 50px;
         border-radius: 6px;
         background: rgba(0, 0, 0, 0.2);
         align-items: center;
@@ -425,6 +533,38 @@ const isSelectedBenchPlayerDisabled = computed(() => {
             .svg {
                 rotate: 90deg;
             }
+        }
+    }
+}
+
+.toggle {
+    height: 50px;
+    align-items: center;
+    font-size: 0.7em;
+    color: #8a8a8a;
+    gap: 8px;
+
+    &.current {
+        justify-content: space-around;
+
+        span {
+            flex: 1;
+        }
+    }
+
+    .now {
+        color: darkred;
+        padding: 2px 8px;
+        border-radius: 24px;
+        border: 1px solid darkred;
+        text-align: center;
+    }
+
+    .next {
+        text-align: right;
+
+        &:active {
+            color: darkred;
         }
     }
 }

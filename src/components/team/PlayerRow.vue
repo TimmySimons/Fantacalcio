@@ -1,13 +1,15 @@
 <script setup lang="ts">
-import { type PlayerContract } from '../../model/player.contract.ts';
+import { type PlayerContract, type PlayerWithScoreContract } from '../../model/player.contract.ts';
 import PlayerJersey from './PlayerJersey.vue';
 
 defineProps<{
     group: string;
-    players: PlayerContract[];
+    players: PlayerWithScoreContract[];
     isHidden?: boolean;
     selectedPlayer?: PlayerContract;
     includedPlayers?: PlayerContract[];
+    isDisabled?: boolean;
+    showPoints?: boolean;
 }>();
 
 const emit = defineEmits<{
@@ -23,6 +25,8 @@ const emit = defineEmits<{
             :player="player"
             :selected-player="selectedPlayer"
             :included-players="includedPlayers"
+            :is-fully-disabled="isDisabled"
+            :show-points="showPoints"
             @click="emit('click', $event)"
         />
 

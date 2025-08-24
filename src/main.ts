@@ -13,7 +13,7 @@ import Tag from 'primevue/tag';
 import Toolbar from 'primevue/toolbar';
 import Dialog from 'primevue/dialog';
 import Toast from 'primevue/toast';
-import { ToastService } from 'primevue';
+import { Card, DatePicker, Drawer, ToastService, ToggleSwitch, Checkbox } from 'primevue';
 import { ScreenSizeUtil } from './size.ts';
 import { createPinia } from 'pinia';
 import { useAuthStore } from './stores/auth.store.ts';
@@ -43,6 +43,11 @@ import { useAuthStore } from './stores/auth.store.ts';
     app.component('Toolbar', Toolbar);
     app.component('Dialog', Dialog);
     app.component('Toast', Toast);
+    app.component('Card', Card);
+    app.component('Drawer', Drawer);
+    app.component('DatePicker', DatePicker);
+    app.component('ToggleSwitch', ToggleSwitch);
+    app.component('Checkbox', Checkbox);
 
     const authStore = useAuthStore();
     await useAuthStore()

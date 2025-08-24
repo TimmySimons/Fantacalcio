@@ -3,4 +3,5 @@ export interface AppUserContract {
     name: string;
     team_name: string;
     roles: string[];
+    playerCount: number;
 }
