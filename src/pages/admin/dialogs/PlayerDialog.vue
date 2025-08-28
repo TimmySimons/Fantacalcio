@@ -298,7 +298,7 @@ const onSave = () => {
 
 .buttons {
     button {
-        margin-top: 12px;
+        margin-top: 4px;
     }
 }
 

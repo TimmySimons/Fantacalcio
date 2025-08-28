@@ -49,7 +49,7 @@ const onClickPlayer = (player: PlayerContract | undefined) => {
     selectedPlayer.value = player;
 
     if (player && props.showDirectDialog) {
-        footballStore.getPlayer(player.id);
+        footballStore.getPlayer(player.id, true);
         showPlayerDialog.value = true;
     }
 };
@@ -110,14 +110,14 @@ const showPlayerDialog = ref(false);
             "
             :action="showBenchBtn ? 'remove' : 'add'"
             @move="(action) => $emit('move', action)"
-            @scores-fetched="footballStore.getPlayer(playerDetailed!.id)"
+            @scores-fetched="footballStore.getPlayer(selectedPlayer!.id)"
         />
 
         <PlayerDialog
             v-model="showPlayerDialog"
             :editable="false"
             :player="playerDetailed"
-            @scores-fetched="footballStore.getPlayer(playerDetailed!.id)"
+            @scores-fetched="footballStore.getPlayer(selectedPlayer!.id)"
         />
     </div>
 </template>

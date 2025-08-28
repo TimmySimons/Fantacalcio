@@ -78,6 +78,7 @@ const progress = computed(() => Math.round(((props.appearances ?? 0) / props.gwC
         font-style: italic;
         font-weight: bold;
         width: 60px;
+        padding-bottom: 4px;
     }
 
     .percentage {

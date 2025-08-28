@@ -83,8 +83,8 @@ export const useFootballStore = defineStore('football-store', {
         async removeAllTeamPlayers(teamId: string) {
             await FootballApi.removeAllTeamPlayers(teamId);
         },
-        async getPlayer(id: string) {
-            this.playerDetailed = undefined;
+        async getPlayer(id: string, forceRefresh?: boolean) {
+            if (forceRefresh) this.playerDetailed = undefined;
             this.playerDetailed = await FootballApi.getPlayer(id);
         }
     }

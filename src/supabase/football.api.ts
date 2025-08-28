@@ -48,7 +48,7 @@ export class FootballApi {
     public static async getUserPlayers(appUserId: string): Promise<PlayerContract[]> {
         const { data, error } = await supabase
             .from('UserPlayers')
-            .select('*, player:Players(*)')
+            .select('*, player:Players(*, PlayerSorareAverages(*))')
             .eq('user_id', appUserId);
 
         if (error) throw error;

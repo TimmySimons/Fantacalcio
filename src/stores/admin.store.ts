@@ -69,6 +69,7 @@ export const useAdminStore = defineStore('admin-store', {
             this.upcomingGameweek = await FootballApi.getUpcomingGameweek();
         },
         async getPlayer(id: string) {
+            this.player = undefined;
             this.player = await FootballApi.getPlayer(id);
         },
         async updatePlayer(playerId: string, sorareSlug: string, sorareData: any) {
