@@ -13,8 +13,7 @@ import FootballField from '../components/team/FootballField.vue';
 import ScoresPill from '../components/gameweeks/ScoresPill.vue';
 
 const footballStore = useFootballStore();
-const { gameweeks, gameweek, gameweekTeam, userPlayers, nextGameWeek, playerDetailed } =
-    storeToRefs(footballStore);
+const { gameweeks, gameweek, gameweekTeam, userPlayers, nextGameWeek } = storeToRefs(footballStore);
 const authStore = useAuthStore();
 const { appUser } = storeToRefs(authStore);
 
