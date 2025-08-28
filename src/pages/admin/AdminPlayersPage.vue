@@ -19,8 +19,11 @@ const onClickPlayer = (playerId: string) => {
     showDialog.value = true;
 };
 
-const onSave = (sorareSlug: string) => {
-    SorareApi.getPlayerStats(sorareSlug).then((sorareData) => {
+const isLoadingSorare = ref(false);
+
+const onSave = async (sorareSlug: string) => {
+    isLoadingSorare.value = true;
+    await SorareApi.getPlayerStats(sorareSlug).then((sorareData) => {
         if (player.value) {
             adminStore.updatePlayer(player.value.id, sorareSlug, sorareData).then(() => {
                 adminStore.getPlayers();
@@ -32,6 +35,8 @@ const onSave = (sorareSlug: string) => {
             });
         }
     });
+
+    isLoadingSorare.value = false;
 };
 
 const onNewPlayer = () => {
@@ -49,7 +54,14 @@ const onNewPlayer = () => {
             </div>
         </div>
         <div class="wrapper inner">
-            <PlayerDialog v-model="showDialog" :editable="true" :player="player" @save="onSave" />
+            <PlayerDialog
+                v-model="showDialog"
+                :editable="true"
+                :player="player"
+                @save="onSave"
+                @scores-fetched="adminStore.getPlayer(player!.id)"
+                :is-loading-sorare="isLoadingSorare"
+            />
 
             <div v-if="players" class="players">
                 <div class="section-header">

@@ -7,7 +7,7 @@ import AdminFooterMenu from '../components/AdminFooterMenu.vue';
     <div class="full-page admin">
         <AppHeader>
             <template #end>
-                <RouterLink :to="{ name: 'Home' }" class="link">
+                <RouterLink :to="{ name: 'Leaderboard' }" class="link">
                     <i class="pi pi-arrow-circle-left" style="font-size: 1.6rem"></i>
                 </RouterLink>
             </template>

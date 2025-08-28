@@ -1,0 +1,143 @@
+<script setup lang="ts">
+import { useFootballStore } from '../stores/football.store.ts';
+import { storeToRefs } from 'pinia';
+import { useRoute } from 'vue-router';
+import { computed, ref, watch } from 'vue';
+import FootballField from '../components/team/FootballField.vue';
+import GameweekDrawer from '../components/gameweeks/GameweekDrawer.vue';
+import type { PlayerContract } from '../model/player.contract.ts';
+import GameweekSelector from '../components/gameweeks/GameweekSelector.vue';
+import { useFootballScoreStore } from '../stores/football-scores.store.ts';
+import ScoresPill from '../components/gameweeks/ScoresPill.vue';
+
+const route = useRoute();
+const managerId = computed<string>(() => route.params.id as string);
+
+const footballStore = useFootballStore();
+const { manager, gameweek, gameweekTeam, gameweeks } = storeToRefs(footballStore);
+const footballScoreStore = useFootballScoreStore();
+
+gameweek.value = undefined;
+gameweekTeam.value = undefined;
+
+watch(
+    managerId,
+    (id: string) => {
+        footballStore.getManagers().then(() => footballStore.getManager(id));
+        footballStore.getCurrentGameweek().then(() => {
+            if (!gameweek.value) {
+                footballStore.getPastGameweek();
+            }
+        });
+        footballStore.getAllGameweeks();
+        footballScoreStore.getAllUsersGameweeksTeamPlayers();
+    },
+    { immediate: true }
+);
+
+const fieldPlayers = computed(() => gameweekTeam.value?.team_players ?? []);
+const selectedPlayer = ref<PlayerContract | undefined>();
+
+const showDrawer = ref(false);
+
+watch(gameweek, () => {
+    if (gameweek.value) {
+        footballStore.getGameweekTeam(gameweek.value.id, managerId.value);
+        footballScoreStore.getUserGameweeksTeamPlayers(managerId.value);
+    }
+});
+
+const nonFutureGameweeks = computed(() => {
+    return gameweeks.value?.filter((gw) => gw.start_date.getTime() < new Date().getTime()) ?? [];
+});
+</script>
+
+<template>
+    <div class="page-content">
+        <GameweekDrawer v-if="gameweeks" :gameweeks="nonFutureGameweeks" v-model="showDrawer" />
+
+        <div class="top">
+            <RouterLink :to="{ name: 'Leaderboard' }" class="return-link">
+                <i class="pi pi-arrow-circle-left" style="font-size: 1.6rem"></i>
+            </RouterLink>
+
+            <div>{{ manager?.team_name }}</div>
+            <div class="manager">{{ manager?.name }}</div>
+        </div>
+
+        <div class="content">
+            <GameweekSelector
+                class="gw-selector"
+                :gameweek="gameweek"
+                :complete="false"
+                :is-locked="true"
+                @click-week="showDrawer = true"
+            />
+
+            <ScoresPill :manager-id="managerId" />
+
+            <FootballField
+                v-model="selectedPlayer"
+                :included-players="fieldPlayers"
+                :show-points="true"
+                :is-locked="true"
+                :is-loading="false"
+                :show-direct-dialog="true"
+            />
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.page-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background-color: #470000;
+
+    .top {
+        height: 100px;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        font-size: 1.2em;
+        font-weight: bold;
+        padding-top: 14px;
+
+        .manager {
+            font-size: 0.6em;
+            font-weight: normal;
+            color: #b8b8b8;
+            line-height: 1em;
+        }
+    }
+
+    .gw-selector {
+        position: absolute;
+        top: -40px;
+        left: 18px;
+        width: fit-content;
+        z-index: 10;
+    }
+
+    .content {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        flex: 1;
+        background-color: #f3f3f3;
+        padding: 12px 18px 24px 18px;
+        border-radius: 24px 24px 0 0;
+        position: relative;
+        z-index: 10;
+    }
+}
+
+.return-link {
+    position: absolute;
+    top: 18px;
+    left: 18px;
+    color: white;
+}
+</style>

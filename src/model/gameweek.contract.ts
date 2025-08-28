@@ -8,3 +8,14 @@ export interface GameweekContract {
     year: number;
     team?: TeamContract;
 }
+
+export interface GameweekTeamPlayerContract {
+    gameweek_id: string;
+    user_id: string;
+    TeamPlayers: { id: string; score: number | null }[];
+}
+
+export interface UserGameweeksTeamPlayersContract {
+    id: string;
+    Teams: GameweekTeamPlayerContract[];
+}

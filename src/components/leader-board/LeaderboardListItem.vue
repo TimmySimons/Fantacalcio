@@ -1,25 +1,36 @@
 <script setup lang="ts">
 import LaurelIcon from '../../assets/icons/laurel.svg';
-import type { ManagerContract } from '../../model/manager.contract.ts';
 import CaretIcon from '../../assets/icons/caret.svg';
+import { useFootballScoreStore } from '../../stores/football-scores.store.ts';
+import { storeToRefs } from 'pinia';
+import { useRouter } from 'vue-router';
+import type { ManagerContract } from '../../model/manager.contract.ts';
 
-defineProps<{
+const props = defineProps<{
     place: number;
     manager: ManagerContract;
 }>();
+
+const footballScoreStore = useFootballScoreStore();
+const { totalUserScore } = storeToRefs(footballScoreStore);
+const router = useRouter();
+
+const onClick = () => {
+    router.push({ name: 'ManagerProfile', params: { id: props.manager.id } });
+};
 </script>
 
 <template>
-    <div class="list-item">
+    <div class="list-item" @click="onClick">
         <div class="ranking">
             {{ place }} <component :is="LaurelIcon" class="svg laurel" v-if="place <= 3" />
         </div>
         <div class="names">
-            <div>{{ manager.teamName }}</div>
-            <div>{{ manager.managerName }}</div>
+            <div>{{ manager.team_name }}</div>
+            <div>{{ manager.name }}</div>
         </div>
-        <div class="gw">+ {{ manager.gameweekScore }}</div>
-        <div class="total">{{ manager.totalScore }}</div>
+        <div class="gw">+ {{ 0 }}</div>
+        <div class="total">{{ totalUserScore(manager.id) }}</div>
         <component :is="CaretIcon" class="svg caret" />
     </div>
 </template>
@@ -29,19 +40,23 @@ defineProps<{
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 24px;
+    gap: 8px;
     padding: 6px 12px;
     border-radius: 12px;
     border: 1px solid lightgray;
     position: relative;
-    background: #ffffff5e;
+    background: #ffffff7a;
+
+    &:active {
+        scale: 0.98;
+    }
 
     .laurel {
         position: absolute;
         top: 8px;
         left: 12px;
         height: 36px;
-        width: 36px;
+        min-width: 36px;
     }
 
     &:first-child {
@@ -107,13 +122,18 @@ defineProps<{
     background: #e6e6e6;
     padding: 2px 8px;
     border-radius: 6px;
+    width: 60px;
+    text-align: center;
+    font-size: 0.9em;
 }
 
 .caret {
     fill: #9f9f9f;
+    margin-left: 8px;
 }
 
 .gw {
     color: #515151;
+    font-size: 0.9em;
 }
 </style>

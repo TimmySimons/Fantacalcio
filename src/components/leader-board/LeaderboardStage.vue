@@ -3,13 +3,13 @@ import LaurelIcon from '../../assets/icons/laurel.svg';
 import type { ManagerContract } from '../../model/manager.contract.ts';
 
 defineProps<{
-    topThree: ManagerContract[];
+    topThree: (ManagerContract | undefined)[];
 }>();
 </script>
 
 <template>
     <div class="stage">
-        <div v-for="(top, idx) in topThree" :key="top.id" class="spot" :class="`spot-${idx}`">
+        <div v-for="(top, idx) in topThree" :key="idx" class="spot" :class="`spot-${idx}`">
             <div class="visuals">
                 <div class="entity">
                     <div class="rank">{{ idx === 0 ? 2 : idx === 1 ? 1 : 3 }}</div>
@@ -19,8 +19,10 @@ defineProps<{
             </div>
 
             <div class="text">
-                <div class="team">{{ top.teamName }}</div>
-                <div class="score">{{ top.totalScore }}</div>
+                <div class="score">
+                    {{ top?.totalScore }}
+                </div>
+                <div class="team">{{ top?.team_name }}</div>
             </div>
         </div>
     </div>
@@ -41,7 +43,6 @@ defineProps<{
         flex-direction: column;
         align-items: center;
         justify-content: space-between;
-        gap: 2px;
 
         .visuals {
             display: flex;
@@ -121,6 +122,7 @@ defineProps<{
         color: white;
         text-align: center;
         font-size: 0.7em;
+        margin-top: -16px;
 
         .team {
             opacity: 0.7;

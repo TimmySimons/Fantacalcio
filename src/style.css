@@ -19,6 +19,9 @@
   --p-datatable-header-cell-selected-background : #fff8f8 !important;
 
   --p-card-body-padding: 12px !important;
+
+  --p-progressbar-value-background: #3c3c3c !important;
+
 }
 
 .p-dialog-content { height: 100% }

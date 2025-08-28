@@ -1,5 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router';
-import HomePage from '../pages/HomePage.vue';
+import LeaderboardPage from '../pages/LeaderboardPage.vue';
 import LoginPage from '../pages/LoginPage.vue';
 import DefaultLayout from '../layouts/DefaultLayout.vue';
 import AdminLayout from '../layouts/AdminLayout.vue';
@@ -7,6 +7,7 @@ import ManageTeamPage from '../pages/ManageTeamPage.vue';
 import AdminPlayersPage from '../pages/admin/AdminPlayersPage.vue';
 import AdminGameweeksPage from '../pages/admin/AdminGameweeksPage.vue';
 import AdminManagersPage from '../pages/admin/AdminManagersPage.vue';
+import ManagerProfilePage from '../pages/ManagerProfilePage.vue';
 import EmptyLayout from '../layouts/EmptyLayout.vue';
 import { useAuthStore } from '../stores/auth.store.ts';
 
@@ -20,17 +21,22 @@ const routes = [
     {
         path: '/',
         meta: { requiresAuth: true, layout: DefaultLayout },
-        redirect: { name: 'Home' },
+        redirect: { name: 'Leaderboard' },
         children: [
             {
                 path: '',
-                name: 'Home',
-                component: HomePage
+                name: 'Leaderboard',
+                component: LeaderboardPage
             },
             {
                 path: 'my-team',
                 name: 'ManageTeam',
                 component: ManageTeamPage
+            },
+            {
+                path: '/managers/:id',
+                name: 'ManagerProfile',
+                component: ManagerProfilePage
             }
         ]
     },
@@ -41,7 +47,6 @@ const routes = [
             {
                 path: '',
                 name: 'Admin',
-                //component: AdminHomePage
                 redirect: { name: 'AdminGameweeks' }
             },
             {
@@ -75,7 +80,7 @@ router.beforeEach(async (to, _from, next) => {
     if (to.meta.requiresAuth && !user) {
         next({ name: 'Login' });
     } else if (to.name === 'Login' && user) {
-        next({ name: 'Home' });
+        next({ name: 'Leaderboard' });
     } else {
         next();
     }

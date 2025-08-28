@@ -1,7 +1,6 @@
-export interface ManagerContract {
-    id: string;
-    teamName: string;
-    managerName: string;
+import type { AppUserContract } from './app-user.contract.ts';
+
+export interface ManagerContract extends AppUserContract {
     totalScore: number;
-    gameweekScore: number;
+    lastGameweekScore: number;
 }

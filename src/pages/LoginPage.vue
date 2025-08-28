@@ -20,7 +20,7 @@ async function signUpHandler() {
             .getAuthUserAndAppUser()
             .then(() => {
                 if (authUser.value) {
-                    router.push({ name: 'Home' });
+                    router.push({ name: 'Leaderboard' });
                 }
             });
     });
@@ -32,7 +32,7 @@ async function signInHandler() {
             .getAuthUserAndAppUser()
             .then(() => {
                 if (authUser.value) {
-                    router.push({ name: 'Home' });
+                    router.push({ name: 'Leaderboard' });
                 }
             });
     });

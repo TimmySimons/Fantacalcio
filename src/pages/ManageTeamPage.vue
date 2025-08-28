@@ -1,28 +1,39 @@
 <script setup lang="ts">
-import { type PlayerContract, PlayerPosition } from '../model/player.contract.ts';
+import { type PlayerContract } from '../model/player.contract.ts';
 import PlayerRow from '../components/team/PlayerRow.vue';
 import GameweekBanner from '../components/gameweeks/GameweekBanner.vue';
 import { computed, ref, watch } from 'vue';
-import ShieldIcon from '../assets/icons/soccer-shield.svg';
-import CaretIcon from '../assets/icons/caret.svg';
 import { storeToRefs } from 'pinia';
 import { useFootballStore } from '../stores/football.store.ts';
 import { FootballUtil } from '../FootballUtil.ts';
 import GameweekDrawer from '../components/gameweeks/GameweekDrawer.vue';
-import PlayerDialog from './admin/dialogs/PlayerDialog.vue';
+import { useAuthStore } from '../stores/auth.store.ts';
+import { useFootballScoreStore } from '../stores/football-scores.store.ts';
+import FootballField from '../components/team/FootballField.vue';
+import ScoresPill from '../components/gameweeks/ScoresPill.vue';
 
 const footballStore = useFootballStore();
 const { gameweeks, gameweek, gameweekTeam, userPlayers, nextGameWeek } = storeToRefs(footballStore);
+const authStore = useAuthStore();
+const { appUser } = storeToRefs(authStore);
+
+const footballScoreStore = useFootballScoreStore();
+footballScoreStore.getUserGameweeksTeamPlayers(useAuthStore().appUser!.id);
+footballScoreStore.getAllUsersGameweeksTeamPlayers();
 
 footballStore.getAllGameweeks();
 footballStore.getUserPlayers();
-footballStore.getCurrentGameweek();
+footballStore.getCurrentGameweek().then(() => {
+    if (!gameweek.value) {
+        footballStore.getUpcomingGameweek();
+    }
+});
 
 watch(gameweek, () => {
     if (gameweek.value) {
         gameweekTeam.value = undefined;
         selectedPlayer.value = undefined;
-        footballStore.getGameweekTeam(gameweek.value.id).then(() => {
+        footballStore.getGameweekTeam(gameweek.value.id, appUser.value!.id).then(() => {
             if (!gameweekTeam.value) {
                 footballStore.createGameweekTeam(gameweek.value!.id);
             }
@@ -40,28 +51,9 @@ const isLockedGameweek = computed(() => {
 
 const selectedPlayer = ref<PlayerContract | undefined>();
 
-const includedKeepers = computed<PlayerContract[]>(
-    () =>
-        gameweekTeam.value?.team_players.filter((p) => p.position === PlayerPosition.Goalkeeper) ??
-        []
-);
-const includedDefenders = computed<PlayerContract[]>(
-    () =>
-        gameweekTeam.value?.team_players.filter((p) => p.position === PlayerPosition.Defender) ?? []
-);
-const includedMidfielders = computed<PlayerContract[]>(
-    () =>
-        gameweekTeam.value?.team_players.filter((p) => p.position === PlayerPosition.Midfielder) ??
-        []
-);
-const includedForwards = computed<PlayerContract[]>(
-    () =>
-        gameweekTeam.value?.team_players.filter((p) => p.position === PlayerPosition.Forward) ?? []
-);
-
 const benchSitters = computed(() =>
     (userPlayers.value ?? [])
-        .filter((p) => !allIncludedPlayers.value.map((p2) => p2.id).includes(p.id))
+        .filter((p) => !allIncludedPlayersOnField.value.map((p2) => p2.id).includes(p.id))
         .sort((a, b) => positionOrder[a.position] - positionOrder[b.position])
 );
 
@@ -72,45 +64,38 @@ const positionOrder: Record<string, number> = {
     Forward: 4
 };
 
-const allIncludedPlayers = computed(() => {
-    return includedKeepers.value.concat(
-        includedDefenders.value,
-        includedMidfielders.value,
-        includedForwards.value
-    );
-});
+const allIncludedPlayersOnField = computed(() => gameweekTeam.value?.team_players ?? []);
 
 const onAddToTeam = async () => {
     if (
         selectedPlayer.value &&
-        !allIncludedPlayers.value.map((p) => p.id).includes(selectedPlayer.value.id)
+        !allIncludedPlayersOnField.value.map((p) => p.id).includes(selectedPlayer.value.id)
     ) {
         if (gameweek.value && gameweekTeam.value) {
             await footballStore
-                .addTeamPlayer(gameweekTeam.value.id, selectedPlayer.value.id)
-                .then(() => footballStore.getGameweekTeam(gameweek.value!.id));
+                .addTeamPlayers(gameweekTeam.value.id, [selectedPlayer.value.id])
+                .then(() => {
+                    if (appUser.value) {
+                        footballStore.getGameweekTeam(gameweek.value!.id, appUser.value.id, true);
+                    }
+                });
         }
     }
 
     selectedPlayer.value = undefined;
 };
 
-const showBenchBtn = computed(() => {
-    return (
-        selectedPlayer.value &&
-        allIncludedPlayers.value.map((p) => p.id).includes(selectedPlayer.value.id)
-    );
-});
-
 const onBench = async () => {
     if (
         selectedPlayer.value &&
-        allIncludedPlayers.value.map((p) => p.id).includes(selectedPlayer.value.id)
+        allIncludedPlayersOnField.value.map((p) => p.id).includes(selectedPlayer.value.id)
     ) {
         if (gameweek.value && gameweekTeam.value) {
             await footballStore
                 .removeTeamPlayers(gameweekTeam.value.id, [selectedPlayer.value.id])
-                .then(() => footballStore.getGameweekTeam(gameweek.value!.id));
+                .then(() =>
+                    footballStore.getGameweekTeam(gameweek.value!.id, appUser.value!.id, true)
+                );
         }
     }
 
@@ -120,55 +105,43 @@ const onBench = async () => {
 const onClearField = () => {
     footballStore
         .removeAllTeamPlayers(gameweekTeam.value!.id)
-        .then(() => footballStore.getGameweekTeam(gameweek.value!.id));
+        .then(() => footballStore.getGameweekTeam(gameweek.value!.id, appUser.value!.id));
 };
 
-const onClickMove = () => {
-    if (isSelectedBenchPlayerDisabled.value) return;
-    if (showBenchBtn.value) {
+const onClickMove = (action: 'add' | 'remove') => {
+    if (action === 'remove') {
         onBench();
     } else {
         onAddToTeam();
     }
 };
 
-// TODO: make reusable function
-const isSelectedBenchPlayerDisabled = computed(() => {
-    if (!allIncludedPlayers.value || !selectedPlayer.value) return false;
-    if (allIncludedPlayers.value.map((p) => p.id).includes(selectedPlayer.value.id)) return false;
-
-    if (allIncludedPlayers.value.length >= 11) return true;
-    if (
-        !allIncludedPlayers.value.find((p) => p.position === PlayerPosition.Goalkeeper) &&
-        selectedPlayer.value.position !== PlayerPosition.Goalkeeper &&
-        allIncludedPlayers.value.length >= 10
-    ) {
-        return true;
-    }
-
-    const includedPlayersOfType = allIncludedPlayers.value.filter(
-        (p) => p.position === selectedPlayer.value!.position
-    );
-
-    if (selectedPlayer.value.position === 'Goalkeeper') {
-        if (includedPlayersOfType.length >= 1) return true;
-    } else if (includedPlayersOfType.length >= 4) return true;
-
-    return false;
-});
-
 const showDrawer = ref(false);
 const pointsView = ref(false);
-const showPlayerDialog = ref(false);
 
 const showPoints = computed(() => isLockedGameweek.value || pointsView.value);
 
 const onManageNext = () => {
-    console.log(gameweeks.value);
-    console.log(gameweek.value);
-    console.log(nextGameWeek.value);
     if (nextGameWeek.value) {
         footballStore.getGameweek(nextGameWeek.value.id);
+    }
+};
+
+const onFillRandom = () => {
+    if (userPlayers.value && gameweekTeam.value) {
+        try {
+            const team = FootballUtil.getRandomTeam(userPlayers.value);
+
+            footballStore.removeAllTeamPlayers(gameweekTeam.value.id).then(async () => {
+                await footballStore.addTeamPlayers(
+                    gameweekTeam.value!.id,
+                    team.map((p) => p.id)
+                );
+                await footballStore.getGameweekTeam(gameweek.value!.id, appUser.value!.id);
+            });
+        } catch (error) {
+            console.error(error);
+        }
     }
 };
 </script>
@@ -177,7 +150,7 @@ const onManageNext = () => {
     <div class="wrapper">
         <GameweekBanner
             :gameweek="gameweek"
-            :complete="allIncludedPlayers.length === 11"
+            :complete="allIncludedPlayersOnField.length === 11"
             :is-locked="isLockedGameweek"
             @click-week="showDrawer = true"
         />
@@ -200,93 +173,31 @@ const onManageNext = () => {
                         >Manage next <i class="pi pi-chevron-right" style="font-size: 8px"></i
                     ></span>
                 </template>
+                <ScoresPill v-else :manager-id="appUser!.id" />
             </div>
-            <div class="pad">
-                <div class="buttons" v-if="!isLockedGameweek">
-                    <div class="btn disabled">Load Previous Team</div>
-                    <div class="btn disabled">Fill Random</div>
-                    <div
-                        class="btn"
-                        @click="onClearField"
-                        :class="{ disabled: allIncludedPlayers.length === 0 }"
-                    >
-                        Clear Field
-                    </div>
-                </div>
-                <div class="pitch card">
-                    <div class="loading" v-if="isLoading">
-                        <i class="pi pi-spin pi-spinner" style="font-size: 24px"></i>
-                    </div>
-                    <div class="players-layer">
-                        <PlayerRow
-                            :players="includedKeepers"
-                            group="keepers"
-                            :selected-player="selectedPlayer"
-                            :show-points="showPoints"
-                            @click="(p) => (selectedPlayer = p)"
-                        />
-                        <PlayerRow
-                            :players="includedDefenders"
-                            group="keepers"
-                            :selected-player="selectedPlayer"
-                            :show-points="showPoints"
-                            @click="(p) => (selectedPlayer = p)"
-                        />
-                        <PlayerRow
-                            :players="includedMidfielders"
-                            group="keepers"
-                            :selected-player="selectedPlayer"
-                            :show-points="showPoints"
-                            @click="(p) => (selectedPlayer = p)"
-                        />
-                        <PlayerRow
-                            :players="includedForwards"
-                            group="keepers"
-                            :selected-player="selectedPlayer"
-                            :show-points="showPoints"
-                            @click="(p) => (selectedPlayer = p)"
-                        />
-                        <div class="position-group hidden">
-                            <div class="player"></div>
+
+            <FootballField
+                v-model="selectedPlayer"
+                :included-players="allIncludedPlayersOnField"
+                :show-points="showPoints"
+                :is-locked="isLockedGameweek"
+                :is-loading="isLoading"
+                @move="onClickMove"
+            >
+                <template #options>
+                    <div class="buttons" v-if="!isLockedGameweek">
+                        <div class="btn disabled">Load Previous Team</div>
+                        <div class="btn" @click="onFillRandom">Fill Random</div>
+                        <div
+                            class="btn"
+                            @click="onClearField"
+                            :class="{ disabled: allIncludedPlayersOnField.length === 0 }"
+                        >
+                            Clear Field
                         </div>
                     </div>
-                </div>
-
-                <div class="player-info" v-if="selectedPlayer">
-                    <PlayerDialog
-                        v-model="showPlayerDialog"
-                        :editable="false"
-                        :player="selectedPlayer"
-                    />
-
-                    <div class="player-img-wrapper" @click="showPlayerDialog = true">
-                        <img
-                            v-if="selectedPlayer?.picture_url"
-                            :src="selectedPlayer.picture_url"
-                            class="player-img"
-                        />
-                        <component v-else :is="ShieldIcon" class="svg" />
-                    </div>
-
-                    <div class="info">
-                        <div>{{ selectedPlayer.first_name + ' ' + selectedPlayer.last_name }}</div>
-                        <div>{{ selectedPlayer.position }}</div>
-                        <div>{{ selectedPlayer.club_name_short }}</div>
-                    </div>
-                    <div class="scores">
-                        <div>126</div>
-                        <div class="new">+13</div>
-                    </div>
-                    <div
-                        v-if="!(isLockedGameweek || isSelectedBenchPlayerDisabled)"
-                        class="move"
-                        :class="{ remove: showBenchBtn }"
-                        @click="onClickMove"
-                    >
-                        <component :is="CaretIcon" class="svg" />
-                    </div>
-                </div>
-            </div>
+                </template>
+            </FootballField>
 
             <div
                 class="substitutes grid"
@@ -300,7 +211,7 @@ const onManageNext = () => {
                     :players="benchSitters"
                     group="bench"
                     :selected-player="selectedPlayer"
-                    :included-players="allIncludedPlayers"
+                    :included-players="allIncludedPlayersOnField"
                     :is-disabled="isLockedGameweek"
                     :show-points="pointsView"
                     @click="(p) => (selectedPlayer = p)"
@@ -326,64 +237,6 @@ const onManageNext = () => {
         border-radius: 0 24px 0 0;
         gap: 8px;
         padding: 6px 14px 12px;
-    }
-
-    .pad {
-        height: 100%;
-        width: 100%;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-        justify-content: space-between;
-        position: relative;
-    }
-
-    .card {
-        height: 100%;
-        width: 100%;
-        box-sizing: border-box;
-        position: relative;
-    }
-
-    .players-layer {
-        position: absolute;
-        top: 0;
-        left: 0;
-        height: 100%;
-        width: 100%;
-        padding: 18px 6px;
-        box-sizing: border-box;
-        display: flex;
-        flex-direction: column;
-        gap: 12px;
-        justify-content: space-between;
-    }
-
-    .player {
-        height: 46px;
-        width: 46px;
-    }
-}
-.pitch {
-    height: 100%;
-    width: 100%;
-    overflow: hidden;
-    background-image: url('../assets/football-pitch-green.png');
-    background-size: 100% 100%;
-    position: relative;
-
-    .loading {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: rgba(0, 0, 0, 0.5);
-        color: white;
     }
 }
 
@@ -444,97 +297,6 @@ const onManageNext = () => {
             opacity: 0.5;
             filter: grayscale(1);
             cursor: not-allowed;
-        }
-    }
-}
-
-.player-info {
-    position: absolute;
-    bottom: 6px;
-    left: 50%;
-    transform: translateX(-50%);
-    height: 66px;
-    width: 96%;
-    display: flex;
-    align-items: start;
-    padding: 6px 6px;
-    box-sizing: border-box;
-    font-size: 0.7em;
-    gap: 8px;
-    background: #50945feb;
-    border: 1px solid #0b6e1547;
-    border-radius: 6px;
-    color: #fff;
-    font-weight: bold;
-    box-shadow: 0px 3px 6px 0px rgb(0 0 0 / 39%);
-
-    .player-img-wrapper {
-        height: 52px;
-        width: 56px;
-        background: rgba(0, 0, 0, 0.2);
-        padding: 4px 4px 0 4px;
-        box-sizing: border-box;
-        border-radius: 6px;
-
-        .player-img {
-            height: 100%;
-            width: auto;
-        }
-    }
-
-    .svg {
-        height: 100%;
-        width: auto;
-        fill: white;
-        z-index: 3;
-    }
-
-    > div {
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        height: 100%;
-    }
-
-    .info {
-        flex: 1;
-
-        > div {
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 110px;
-        }
-    }
-
-    .scores,
-    .move {
-        height: 100%;
-        min-width: 50px;
-        border-radius: 6px;
-        background: rgba(0, 0, 0, 0.2);
-        align-items: center;
-        font-size: 1.5em;
-
-        .new {
-            font-size: 0.7em;
-            color: #e8e8e8;
-        }
-
-        .svg {
-            rotate: -90deg;
-            max-width: 30px;
-        }
-    }
-
-    .move {
-        background-color: #093400;
-        border: 1px solid #0f2700;
-
-        &.remove {
-            .svg {
-                rotate: 90deg;
-            }
         }
     }
 }
