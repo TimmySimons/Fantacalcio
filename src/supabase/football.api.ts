@@ -328,4 +328,22 @@ export class FootballApi {
             console.log('Scores updated!');
         }
     }
+
+    public static async updateGameweekPlayerScoreOverride(update: {
+        id: number;
+        score: number | null;
+    }): Promise<void> {
+        console.log('Updating gameweek player score...', update);
+
+        const { data, error } = await supabase
+            .from('TeamPlayers')
+            .update({ score: update.score })
+            .eq('id', update.id);
+
+        if (error) {
+            console.error('Failed to update score_override:', error.message);
+        } else {
+            console.log('Updated row:', data);
+        }
+    }
 }

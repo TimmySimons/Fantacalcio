@@ -68,6 +68,10 @@ const publishScores = () => {
         });
     }
 };
+
+const onScored = () => {
+    adminStore.getGameweekTeams(gameweekId.value);
+};
 </script>
 
 <template>
@@ -136,7 +140,9 @@ const publishScores = () => {
                     )"
                     :key="player.player.id"
                     :player="player.player"
+                    :team-player-id="player.teamPlayerId"
                     :score="player.score"
+                    @scored="onScored"
                 />
                 <div class="none" v-if="gwTeam.players.length === 0">No players</div>
             </div>

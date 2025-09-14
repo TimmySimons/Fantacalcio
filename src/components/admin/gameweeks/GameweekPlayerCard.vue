@@ -1,20 +1,32 @@
 <script setup lang="ts">
 import type { BasePlayerContract } from '../../../model/player.contract.ts';
-import { computed } from 'vue';
+import { computed, ref } from 'vue';
 import { FootballUtil } from '../../../FootballUtil.ts';
+import OverridePlayerScoreDialog from '../../../pages/admin/dialogs/OverridePlayerScoreDialog.vue';
 
 const props = defineProps<{
     player: BasePlayerContract;
+    teamPlayerId: number;
     score?: number;
+}>();
+
+const emit = defineEmits<{
+    (e: 'scored'): void;
 }>();
 
 const color = computed(() => {
     return props.score ? FootballUtil.getColorByValue(props.score) : undefined;
 });
+
+const showScoreOverrideDialog = ref(false);
+
+const onClick = () => {
+    showScoreOverrideDialog.value = true;
+};
 </script>
 
 <template>
-    <Card class="card player flex">
+    <Card class="card player flex" @click="onClick">
         <template #content>
             <div class="card-content">
                 <div>
@@ -27,6 +39,13 @@ const color = computed(() => {
             </div></template
         ></Card
     >
+    <OverridePlayerScoreDialog
+        v-model="showScoreOverrideDialog"
+        :player="player"
+        :team-player-id="teamPlayerId"
+        :score="score"
+        @scored="emit('scored')"
+    />
 </template>
 
 <style scoped>
