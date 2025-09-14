@@ -21,6 +21,16 @@ const footballScoreStore = useFootballScoreStore();
 gameweek.value = undefined;
 gameweekTeam.value = undefined;
 
+const isLoading = computed(() => {
+    return !(
+        manager.value &&
+        gameweeks.value &&
+        gameweek.value &&
+        gameweekTeam.value &&
+        gameweekTeam.value
+    );
+});
+
 watch(
     managerId,
     (id: string) => {
@@ -80,7 +90,7 @@ const nonFutureGameweeks = computed(() => {
                     <span></span>
                     <span class="now">Now playing!</span>
                 </template>
-                <div v-else-if="!gameweek?.scores_published_date">Awaiting scores</div>
+                <div v-else-if="gameweek && !gameweek.scores_published_date">Awaiting scores</div>
 
                 <ScoresPill :manager-id="managerId" />
             </div>
@@ -90,7 +100,7 @@ const nonFutureGameweeks = computed(() => {
                 :included-players="fieldPlayers"
                 :show-points="true"
                 :is-locked="true"
-                :is-loading="false"
+                :is-loading="isLoading"
                 :show-direct-dialog="true"
             />
         </div>

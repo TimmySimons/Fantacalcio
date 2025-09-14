@@ -15,7 +15,7 @@ const emit = defineEmits<{
 
 <template>
     <div class="week" @click="emit('click-week')">
-        <div>GW</div>
+        <div v-if="gameweek">GW</div>
         <div>{{ gameweek?.week }}</div>
         <component v-if="!isLocked && complete" :is="CheckIcon" class="svg check" />
     </div>

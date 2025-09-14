@@ -174,7 +174,7 @@ const onFillRandom = () => {
                         >Manage next <i class="pi pi-chevron-right" style="font-size: 8px"></i
                     ></span>
                 </template>
-                <template v-else>
+                <template v-else-if="gameweek">
                     <div v-if="!gameweek?.scores_published_date">Awaiting scores</div>
                     <ScoresPill :manager-id="appUser!.id" />
                 </template>
