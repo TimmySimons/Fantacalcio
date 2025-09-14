@@ -32,7 +32,7 @@ watch(
         sorareSlug.value = slug;
 
         if (slug && props.player && !props.player.PlayerSorareAverages) {
-            await SorareApi.getPlayersScores([slug]).then((scores) => {
+            await SorareApi.getPlayersAverageScores([slug]).then((scores) => {
                 // TODO: update averages
 
                 const playerScores = scores[0];

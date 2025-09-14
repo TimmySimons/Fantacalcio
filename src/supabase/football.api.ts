@@ -1,11 +1,11 @@
 import { supabase } from './supabase.ts';
 import type {
-    GameweekContract,
     GameweekTeamPlayerContract,
     UserGameweeksTeamPlayersContract
 } from '../model/gameweek.contract.ts';
 import type { TeamContract } from '../model/team.contract.ts';
 import type {
+    BasePlayerContract,
     PlayerAverageScoresContract,
     PlayerContract,
     UpdatePlayerContract
@@ -66,61 +66,6 @@ export class FootballApi {
         });
 
         if (error) throw error;
-    }
-
-    public static async getGameweek(id: string): Promise<GameweekContract> {
-        const { data, error } = await supabase.from('Gameweeks').select('*').eq('id', id).single();
-
-        if (error) throw error;
-        return data;
-    }
-
-    // The one to manage
-    public static async getUpcomingGameweek(): Promise<GameweekContract> {
-        const today = new Date().toISOString();
-
-        const { data, error } = await supabase
-            .from('Gameweeks')
-            .select('*')
-            .gt('start_date', today)
-            .order('start_date', { ascending: true })
-            .limit(1)
-            .single();
-
-        if (error) throw error;
-        return data;
-    }
-
-    public static async getPastGameweek(): Promise<GameweekContract> {
-        const today = new Date().toISOString();
-
-        const { data, error } = await supabase
-            .from('Gameweeks')
-            .select('*')
-            .lt('end_date', today)
-            .order('end_date', { ascending: false })
-            .limit(1)
-            .single();
-
-        if (error) throw error;
-        return data;
-    }
-
-    // The one to score
-    public static async getCurrentGameweek(): Promise<GameweekContract> {
-        const today = new Date().toISOString();
-
-        const { data, error } = await supabase
-            .from('Gameweeks')
-            .select('*')
-            .lte('start_date', today)
-            .gte('end_date', today)
-            .order('start_date', { ascending: true })
-            .limit(1)
-            .maybeSingle();
-
-        if (error) throw error;
-        return data;
     }
 
     public static async getGameweekTeam(
@@ -217,21 +162,6 @@ export class FootballApi {
         }
     }
 
-    public static async getAllGameweeks(): Promise<GameweekContract[]> {
-        const { data, error } = await supabase
-            .from('Gameweeks')
-            .select('*')
-            .order('start_date', { ascending: true });
-
-        if (error) throw error;
-        return data.map((d) => ({
-            ...d,
-            start_date: new Date(d.start_date),
-            end_date: new Date(d.end_date),
-            week: +d.week
-        }));
-    }
-
     public static async getAllManagers(): Promise<AppUserContract[]> {
         const { data, error } = await supabase.from('Users').select('*, UserPlayers(count)');
 
@@ -280,7 +210,8 @@ export class FootballApi {
                 `
                     gameweek_id,
                     user_id,
-                    TeamPlayers(id, score)
+                    TeamPlayers(id, score),
+                    Gameweeks (scores_published_date)
                   `
             )
             .eq('user_id', userId);
@@ -289,26 +220,29 @@ export class FootballApi {
             throw new Error(`Failed to get user gameweek team players: ${error.message}`);
         }
 
-        return data;
+        return data as any as GameweekTeamPlayerContract[];
     }
 
     public static async getAllUsersGameweeksTeamPlayers(): Promise<
         UserGameweeksTeamPlayersContract[]
     > {
-        const { data, error } = await supabase.from('Users').select(`
+        const { data, error } = await supabase.from('Users').select(
+            `
             id,
             Teams (
               gameweek_id,
               user_id,
-              TeamPlayers (id, score)
+              TeamPlayers (id, score),
+              Gameweeks (scores_published_date)
             )
-          `);
+          `
+        );
 
         if (error) {
             throw new Error(`Failed to get all users gameweek team players: ${error.message}`);
         }
 
-        return data;
+        return data as any as UserGameweeksTeamPlayersContract[];
     }
 
     public static async createPlayerAverageScores(
@@ -335,6 +269,63 @@ export class FootballApi {
 
         if (error) {
             throw new Error(`Failed to update player average scores: ${error.message}`);
+        }
+    }
+
+    public static async getAllGameweekPlayers(gameweekId: string): Promise<
+        {
+            team: { name: string; managerName: string };
+            players: { player: BasePlayerContract; teamPlayerId: number; score?: number }[];
+        }[]
+    > {
+        const { data, error } = await supabase
+            .from('Teams')
+            .select(
+                `
+                id,
+                Users (name, team_name),
+                TeamPlayers (
+                  id,
+                  score,
+                  Players (
+                    id,
+                    first_name,
+                    last_name,
+                    sorare_slug,
+                    club_name_short
+                  )
+                )
+              `
+            )
+            .eq('gameweek_id', gameweekId);
+
+        if (error) {
+            throw new Error(`Failed to get all gameweek players: ${error.message}`);
+        }
+
+        return data.map((d) => ({
+            team: { name: (d.Users as any).team_name, managerName: (d.Users as any).name },
+            players: d.TeamPlayers.map((p) => ({
+                player: p.Players as any,
+                teamPlayerId: p.id,
+                score: p.score
+            }))
+        }));
+    }
+
+    public static async updateGameweekPlayerScores(
+        updates: { id: number; score: number }[]
+    ): Promise<void> {
+        console.log('Updating gameweek player scores...', updates);
+
+        const { error } = await supabase.rpc('bulk_update_teamplayer_scores', {
+            updates: updates
+        });
+
+        if (error) {
+            console.error(error);
+        } else {
+            console.log('Scores updated!');
         }
     }
 }

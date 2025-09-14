@@ -6,6 +6,11 @@ import {
     type PlayerWithScoreContract
 } from '../../model/player.contract.ts';
 import { computed } from 'vue';
+import { useFootballStore } from '../../stores/football.store.ts';
+import { storeToRefs } from 'pinia';
+
+const footballStore = useFootballStore();
+const { gameweek } = storeToRefs(footballStore);
 
 const props = defineProps<{
     player: PlayerWithScoreContract;
@@ -69,8 +74,13 @@ const isDisabled = computed(() => {
         <span class="name">{{ player.last_name || player.first_name }}</span>
         <div v-if="showPoints" class="points-wrapper">
             <div class="points gw">
-                <span v-if="player.score !== null && player.score !== undefined"
-                    >+{{ player.score }}</span
+                <span
+                    v-if="
+                        !!gameweek?.scores_published_date &&
+                        player.score !== null &&
+                        player.score !== undefined
+                    "
+                    >+{{ Math.round(player.score) }}</span
                 >
                 <span v-else>-</span>
             </div>
@@ -211,7 +221,7 @@ const isDisabled = computed(() => {
     font-weight: bold;
 
     &.total {
-        background: #570000;
+        background: #af9595;
         color: #fff;
     }
 }

@@ -13,7 +13,8 @@ import FootballField from '../components/team/FootballField.vue';
 import ScoresPill from '../components/gameweeks/ScoresPill.vue';
 
 const footballStore = useFootballStore();
-const { gameweeks, gameweek, gameweekTeam, userPlayers, nextGameWeek } = storeToRefs(footballStore);
+const { gameweeks, currentGameweek, nextGameweek, gameweek, gameweekTeam, userPlayers } =
+    storeToRefs(footballStore);
 const authStore = useAuthStore();
 const { appUser } = storeToRefs(authStore);
 
@@ -21,21 +22,21 @@ const footballScoreStore = useFootballScoreStore();
 footballScoreStore.getUserGameweeksTeamPlayers(useAuthStore().appUser!.id);
 footballScoreStore.getAllUsersGameweeksTeamPlayers();
 
-footballStore.getAllGameweeks();
-footballStore.getUserPlayers();
-footballStore.getCurrentGameweek().then(() => {
-    if (!gameweek.value) {
-        footballStore.getUpcomingGameweek();
+footballStore.getAllGameweeks().then(() => {
+    if (currentGameweek.value) {
+        footballStore.getGameweek(currentGameweek.value.id);
     }
 });
+footballStore.getUserPlayers();
 
 watch(gameweek, () => {
     if (gameweek.value) {
         gameweekTeam.value = undefined;
         selectedPlayer.value = undefined;
-        footballStore.getGameweekTeam(gameweek.value.id, appUser.value!.id).then(() => {
+        footballStore.getGameweekTeam(gameweek.value.id, appUser.value!.id).then(async () => {
             if (!gameweekTeam.value) {
-                footballStore.createGameweekTeam(gameweek.value!.id);
+                await footballStore.createGameweekTeam(gameweek.value!.id);
+                await footballStore.getGameweekTeam(gameweek.value!.id, appUser.value!.id);
             }
         });
     }
@@ -122,8 +123,8 @@ const pointsView = ref(false);
 const showPoints = computed(() => isLockedGameweek.value || pointsView.value);
 
 const onManageNext = () => {
-    if (nextGameWeek.value) {
-        footballStore.getGameweek(nextGameWeek.value.id);
+    if (nextGameweek.value) {
+        footballStore.getGameweek(nextGameweek.value.id);
     }
 };
 
@@ -169,11 +170,14 @@ const onFillRandom = () => {
                 <template v-else-if="FootballUtil.isCurrentGameweek(gameweek)" class="current">
                     <span></span>
                     <span class="now">Now playing!</span>
-                    <span class="next" @click="onManageNext"
+                    <span v-if="nextGameweek" class="next" @click="onManageNext"
                         >Manage next <i class="pi pi-chevron-right" style="font-size: 8px"></i
                     ></span>
                 </template>
-                <ScoresPill v-else :manager-id="appUser!.id" />
+                <template v-else>
+                    <div v-if="!gameweek?.scores_published_date">Awaiting scores</div>
+                    <ScoresPill :manager-id="appUser!.id" />
+                </template>
             </div>
 
             <FootballField

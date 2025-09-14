@@ -5,13 +5,17 @@ export enum PlayerPosition {
     Forward = 'Forward'
 }
 
-export interface PlayerContract {
+export interface BasePlayerContract {
     id: string;
+    sorare_slug: string;
     first_name: string;
     last_name: string | undefined;
+    club_name_short: string | undefined;
+}
+
+export interface PlayerContract extends BasePlayerContract {
     position: PlayerPosition;
     next_opponent_club: string | undefined;
-    sorare_slug: string | undefined;
     // Sorare data
     sorare_last_updated: Date | undefined;
     picture_url: string | undefined;
@@ -21,7 +25,6 @@ export interface PlayerContract {
     country: string | undefined;
     country_flag_picture_url: string | undefined;
     shirt_number: string | undefined;
-    club_name_short: string | undefined;
     club_picture_url: string | undefined;
     PlayerSorareAverages: PlayerAverageScoresContract | undefined;
 }

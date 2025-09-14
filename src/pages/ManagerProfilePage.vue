@@ -9,12 +9,13 @@ import type { PlayerContract } from '../model/player.contract.ts';
 import GameweekSelector from '../components/gameweeks/GameweekSelector.vue';
 import { useFootballScoreStore } from '../stores/football-scores.store.ts';
 import ScoresPill from '../components/gameweeks/ScoresPill.vue';
+import { FootballUtil } from '../FootballUtil.ts';
 
 const route = useRoute();
 const managerId = computed<string>(() => route.params.id as string);
 
 const footballStore = useFootballStore();
-const { manager, gameweek, gameweekTeam, gameweeks } = storeToRefs(footballStore);
+const { manager, gameweek, currentGameweek, gameweekTeam, gameweeks } = storeToRefs(footballStore);
 const footballScoreStore = useFootballScoreStore();
 
 gameweek.value = undefined;
@@ -24,9 +25,9 @@ watch(
     managerId,
     (id: string) => {
         footballStore.getManagers().then(() => footballStore.getManager(id));
-        footballStore.getCurrentGameweek().then(() => {
-            if (!gameweek.value) {
-                footballStore.getPastGameweek();
+        footballStore.getAllGameweeks().then(() => {
+            if (currentGameweek.value) {
+                footballStore.getGameweek(currentGameweek.value.id);
             }
         });
         footballStore.getAllGameweeks();
@@ -74,7 +75,15 @@ const nonFutureGameweeks = computed(() => {
                 @click-week="showDrawer = true"
             />
 
-            <ScoresPill :manager-id="managerId" />
+            <div class="top-info">
+                <template v-if="FootballUtil.isCurrentGameweek(gameweek)" class="current">
+                    <span></span>
+                    <span class="now">Now playing!</span>
+                </template>
+                <div v-else-if="!gameweek?.scores_published_date">Awaiting scores</div>
+
+                <ScoresPill :manager-id="managerId" />
+            </div>
 
             <FootballField
                 v-model="selectedPlayer"
@@ -139,5 +148,21 @@ const nonFutureGameweeks = computed(() => {
     top: 18px;
     left: 18px;
     color: white;
+}
+
+.top-info {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    font-size: 0.8em;
+    color: #8a8a8a;
+    gap: 12px;
+
+    > {
+        flex: 1;
+    }
+}
+.now {
+    color: darkred;
 }
 </style>

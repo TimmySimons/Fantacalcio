@@ -47,6 +47,13 @@ body {
   }
 }
 
+.flex-col {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
 .footer {
   border-top: 1px solid #dee2e6;
 }
@@ -163,3 +170,4 @@ table, .p-tag-label {
     color: white !important;
   }
 }
+

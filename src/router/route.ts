@@ -6,6 +6,7 @@ import AdminLayout from '../layouts/AdminLayout.vue';
 import ManageTeamPage from '../pages/ManageTeamPage.vue';
 import AdminPlayersPage from '../pages/admin/AdminPlayersPage.vue';
 import AdminGameweeksPage from '../pages/admin/AdminGameweeksPage.vue';
+import AdminGameweekPage from '../pages/admin/AdminGameweekPage.vue';
 import AdminManagersPage from '../pages/admin/AdminManagersPage.vue';
 import ManagerProfilePage from '../pages/ManagerProfilePage.vue';
 import EmptyLayout from '../layouts/EmptyLayout.vue';
@@ -56,8 +57,18 @@ const routes = [
             },
             {
                 path: 'gameweeks',
-                name: 'AdminGameweeks',
-                component: AdminGameweeksPage
+                children: [
+                    {
+                        path: '',
+                        name: 'AdminGameweeks',
+                        component: AdminGameweeksPage
+                    },
+                    {
+                        path: ':id',
+                        name: 'AdminGameweek',
+                        component: AdminGameweekPage
+                    }
+                ]
             },
             {
                 path: 'managers',

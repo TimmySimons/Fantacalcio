@@ -29,7 +29,7 @@ const onClick = () => {
             <div>{{ manager.team_name }}</div>
             <div>{{ manager.name }}</div>
         </div>
-        <div class="gw">+ {{ 0 }}</div>
+        <div class="gw">+{{ 0 }}</div>
         <div class="total">{{ totalUserScore(manager.id) }}</div>
         <component :is="CaretIcon" class="svg caret" />
     </div>
@@ -129,7 +129,7 @@ const onClick = () => {
 
 .caret {
     fill: #9f9f9f;
-    margin-left: 8px;
+    margin-left: 2px;
 }
 
 .gw {

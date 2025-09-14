@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import type { GameweekContract } from '../../../model/gameweek.contract.ts';
 
 const props = defineProps<{
-    prevGameweek: GameweekContract | undefined;
+    prevGameweek?: GameweekContract | undefined;
 }>();
 
 const showDialog = defineModel<boolean>({ required: false, default: false });

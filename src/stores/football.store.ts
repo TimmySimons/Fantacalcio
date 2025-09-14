@@ -5,6 +5,7 @@ import type { TeamContract } from '../model/team.contract.ts';
 import { useAuthStore } from './auth.store.ts';
 import type { PlayerContract } from '../model/player.contract.ts';
 import type { AppUserContract } from '../model/app-user.contract.ts';
+import { GameweekApi } from '../supabase/football/gameweek.api.ts';
 
 interface FootballState {
     gameweeks: GameweekContract[] | undefined;
@@ -26,7 +27,17 @@ export const useFootballStore = defineStore('football-store', {
         playerDetailed: undefined
     }),
     getters: {
-        nextGameWeek: (state) =>
+        currentGameweek: (state) => {
+            const now = new Date();
+            return state.gameweeks
+                ? state.gameweeks.find((gw) => gw.start_date <= now && gw.end_date >= now)
+                : undefined;
+        },
+        previousGameweek: (state) =>
+            state.gameweeks && state.gameweek
+                ? state.gameweeks.find((gw) => +gw.week === +state.gameweek!.week - 1)
+                : undefined,
+        nextGameweek: (state) =>
             state.gameweeks && state.gameweek
                 ? state.gameweeks.find((gw) => +gw.week === +state.gameweek!.week + 1)
                 : undefined
@@ -39,24 +50,12 @@ export const useFootballStore = defineStore('football-store', {
             this.manager = this.managers?.find((m) => m.id === id);
         },
         async getAllGameweeks() {
-            this.gameweeks = await FootballApi.getAllGameweeks();
-        },
-        async getCurrentGameweek() {
-            this.gameweekTeam = undefined;
-            this.gameweek = await FootballApi.getCurrentGameweek();
-        },
-        async getUpcomingGameweek() {
-            this.gameweekTeam = undefined;
-            this.gameweek = await FootballApi.getUpcomingGameweek();
-        },
-        async getPastGameweek() {
-            this.gameweekTeam = undefined;
-            this.gameweek = await FootballApi.getPastGameweek();
+            this.gameweeks = await GameweekApi.getAllGameweeks();
         },
         async getGameweek(id: string) {
             this.gameweek = undefined;
             this.gameweekTeam = undefined;
-            this.gameweek = await FootballApi.getGameweek(id);
+            this.gameweek = await GameweekApi.getGameweek(id);
         },
         async getGameweekTeam(gwId: string, userId: string, skipFetch?: boolean) {
             if (!skipFetch) this.gameweekTeam = undefined;

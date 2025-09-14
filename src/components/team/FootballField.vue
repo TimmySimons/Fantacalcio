@@ -132,6 +132,8 @@ const showPlayerDialog = ref(false);
     gap: 8px;
     justify-content: space-between;
     position: relative;
+    max-width: 600px;
+    margin: 0 auto;
 
     .players-layer {
         position: absolute;

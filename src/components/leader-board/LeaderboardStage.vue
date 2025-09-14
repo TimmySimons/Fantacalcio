@@ -36,6 +36,8 @@ defineProps<{
     padding: 24px 18px;
     position: sticky;
     top: 0;
+    max-width: 600px;
+    margin: 0 auto;
 
     .spot {
         flex: 1;

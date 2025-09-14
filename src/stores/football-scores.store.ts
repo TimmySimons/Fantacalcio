@@ -17,17 +17,23 @@ export const useFootballScoreStore = defineStore('football-scores-store', {
     }),
     getters: {
         totalUserScore() {
-            return (userId: string) =>
-                this.allUsersGamesWeekTeamPlayers
+            return (userId: string) => {
+                const score = this.allUsersGamesWeekTeamPlayers
                     ?.filter((g) => g.id === userId)
                     .flatMap((g) => g.Teams)
+                    .filter((t) => !!t.Gameweeks.scores_published_date)
                     .flatMap((t) => t.TeamPlayers)
                     .reduce((acc, g) => acc + (g.score ?? 0), 0);
+
+                return score ? Math.round(score) : 0;
+            };
         },
         gameweekUserScore() {
             return (gameweekId: string) =>
                 this.userGameWeeksTeamPlayers
-                    ?.filter((g) => g.gameweek_id === gameweekId)
+                    ?.filter(
+                        (g) => g.gameweek_id === gameweekId && !!g.Gameweeks.scores_published_date
+                    )
                     .flatMap((t) => t.TeamPlayers)
                     .reduce((acc, g) => acc + (g.score ?? 0), 0);
         }
