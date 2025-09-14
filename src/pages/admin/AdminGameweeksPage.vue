@@ -23,43 +23,49 @@ const onSelect = (gameweek: GameweekContract) => {
 </script>
 
 <template>
-    <div class="title flex items-center">
-        Gameweeks
-        <!--        <div class="flex justify-end">-->
-        <!--            <Button label="New Gameweek" @click="showDialog = true" class="new-btn" />-->
-        <!--        </div>-->
-    </div>
+    <div class="flex-col">
+        <div class="title flex items-center">
+            Gameweeks
+            <!--        <div class="flex justify-end">-->
+            <!--            <Button label="New Gameweek" @click="showDialog = true" class="new-btn" />-->
+            <!--        </div>-->
+        </div>
 
-    <GameweekDialog v-model="showDialog" />
+        <GameweekDialog v-model="showDialog" />
 
-    <div class="flex col gap-8">
-        <div v-for="gameweek in gameweeks" :key="gameweek.id" @click="onSelect(gameweek)">
-            <Card class="card">
-                <template #content>
-                    <div
-                        class="content flex"
-                        :class="{ current: gameweek.id === currentGameweek?.id }"
-                    >
-                        <div class="gw">GW{{ gameweek.week }}</div>
-                        <div class="right">
-                            <div class="scores" v-if="gameweek.end_date < new Date()">
-                                <Badge v-if="gameweek.scores_published_date" :severity="'success'"
-                                    >Scores Published</Badge
-                                >
-                                <Badge v-else :severity="'secondary'">Awaiting Scoring</Badge>
-                            </div>
-                            <div class="dates flex col justify-end">
-                                <span>{{
-                                    dayjs(gameweek.start_date).format('DD MMM YYYY HH:mm')
-                                }}</span>
-                                <span>
-                                    {{ dayjs(gameweek.end_date).format('DD MMM YYYY HH:mm') }}</span
-                                >
+        <div class="flex col flex-col gap-8 gws">
+            <div v-for="gameweek in gameweeks" :key="gameweek.id" @click="onSelect(gameweek)">
+                <Card class="card">
+                    <template #content>
+                        <div
+                            class="content flex"
+                            :class="{ current: gameweek.id === currentGameweek?.id }"
+                        >
+                            <div class="gw">GW{{ gameweek.week }}</div>
+                            <div class="right">
+                                <div class="scores" v-if="gameweek.end_date < new Date()">
+                                    <Badge
+                                        v-if="gameweek.scores_published_date"
+                                        :severity="'success'"
+                                        >Scores Published</Badge
+                                    >
+                                    <Badge v-else :severity="'secondary'">Awaiting Scoring</Badge>
+                                </div>
+                                <div class="dates flex col justify-end">
+                                    <span>{{
+                                        dayjs(gameweek.start_date).format('DD MMM YYYY HH:mm')
+                                    }}</span>
+                                    <span>
+                                        {{
+                                            dayjs(gameweek.end_date).format('DD MMM YYYY HH:mm')
+                                        }}</span
+                                    >
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </template>
-            </Card>
+                    </template>
+                </Card>
+            </div>
         </div>
     </div>
 </template>
@@ -116,5 +122,9 @@ const onSelect = (gameweek: GameweekContract) => {
 .scores {
     display: flex;
     gap: 4px;
+}
+
+.gws {
+    overflow-y: auto;
 }
 </style>
