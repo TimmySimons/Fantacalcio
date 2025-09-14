@@ -17,6 +17,8 @@ defineEmits<{
 }>();
 
 const showPlayerDialog = ref(false);
+
+// TODO Scores op info ding
 </script>
 
 <template>
@@ -43,8 +45,8 @@ const showPlayerDialog = ref(false);
             <div>{{ selectedPlayer.club_name_short }}</div>
         </div>
         <div class="scores">
-            <div>126</div>
-            <div class="new">+13</div>
+            <div>0</div>
+            <div class="new">+0</div>
         </div>
         <div
             v-if="canMove"

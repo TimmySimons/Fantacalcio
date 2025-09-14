@@ -23,10 +23,10 @@ const onClickManager = (manager: AppUserContract) => {
 <template>
     <ManagerDialog v-if="selectedManager" v-model="showDialog" :manager="selectedManager" />
 
-    <div class="wrapper">
+    <div class="wrapper flex-col">
         <div class="title">Managers</div>
-        <div class="wrapper inner">
-            <div v-if="managers" class="players">
+        <div class="wrapper inner flex-col">
+            <div v-if="managers" class="players flex-col">
                 <Card
                     class="card player flex"
                     v-for="manager in managers"
@@ -39,7 +39,7 @@ const onClickManager = (manager: AppUserContract) => {
                                 <div class="team">{{ manager.team_name }}</div>
                                 <div class="user">{{ manager.name }}</div>
                             </div>
-                            <div class="count" :class="{ error: manager.playerCount !== 20 }">
+                            <div class="count" :class="{ error: manager.playerCount == 0 }">
                                 {{ manager.playerCount }}
                             </div>
                         </div>
@@ -67,6 +67,10 @@ const onClickManager = (manager: AppUserContract) => {
         min-height: 0;
         gap: 8px;
         overflow-y: auto;
+
+        .card {
+            min-height: fit-content;
+        }
 
         .player {
             background: #ffffff;

@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import JerseyIcon from '../../assets/icons/jersey-full.svg';
-import {
-    type PlayerContract,
-    PlayerPosition,
-    type PlayerWithScoreContract
-} from '../../model/player.contract.ts';
+import { type PlayerContract, type PlayerWithScoreContract } from '../../model/player.contract.ts';
 import { computed } from 'vue';
 import { useFootballStore } from '../../stores/football.store.ts';
 import { storeToRefs } from 'pinia';
+import { FootballUtil } from '../../FootballUtil.ts';
 
 const footballStore = useFootballStore();
 const { gameweek } = storeToRefs(footballStore);
@@ -33,27 +30,7 @@ const onClickPlayer = (player: PlayerContract) => {
 };
 
 const isDisabled = computed(() => {
-    if (props.isFullyDisabled) return true;
-
-    if (!props.includedPlayers) return false;
-    if (props.includedPlayers.length >= 11) return true;
-    if (
-        !props.includedPlayers.find((p) => p.position === PlayerPosition.Goalkeeper) &&
-        props.player.position !== PlayerPosition.Goalkeeper &&
-        props.includedPlayers.length >= 10
-    ) {
-        return true;
-    }
-
-    const includedPlayersOfType = props.includedPlayers.filter(
-        (p) => p.position === props.player.position
-    );
-
-    if (props.player.position === 'Goalkeeper') {
-        if (includedPlayersOfType.length >= 1) return true;
-    } else if (includedPlayersOfType.length >= 4) return true;
-
-    return false;
+    return FootballUtil.isSelectedBenchPlayerDisabled(props.includedPlayers, props.player);
 });
 </script>
 

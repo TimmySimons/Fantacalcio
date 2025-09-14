@@ -37,19 +37,27 @@ export const useAdminStore = defineStore('admin-store', {
         goalkeepers: (state) =>
             state.players
                 ?.filter((p) => p.position === PlayerPosition.Goalkeeper)
-                .sort((a, b) => a.first_name.localeCompare(b.first_name)) ?? [],
+                .sort((a, b) =>
+                    (a.last_name ?? a.first_name).localeCompare(b.last_name ?? b.first_name)
+                ) ?? [],
         defenders: (state) =>
             state.players
                 ?.filter((p) => p.position === PlayerPosition.Defender)
-                .sort((a, b) => a.first_name.localeCompare(b.first_name)) ?? [],
+                .sort((a, b) =>
+                    (a.last_name ?? a.first_name).localeCompare(b.last_name ?? b.first_name)
+                ) ?? [],
         midfielders: (state) =>
             state.players
                 ?.filter((p) => p.position === PlayerPosition.Midfielder)
-                .sort((a, b) => a.first_name.localeCompare(b.first_name)) ?? [],
+                .sort((a, b) =>
+                    (a.last_name ?? a.first_name).localeCompare(b.last_name ?? b.first_name)
+                ) ?? [],
         forwards: (state) =>
             state.players
                 ?.filter((p) => p.position === PlayerPosition.Forward)
-                .sort((a, b) => a.first_name.localeCompare(b.first_name)) ?? [],
+                .sort((a, b) =>
+                    (a.last_name ?? a.first_name).localeCompare(b.last_name ?? b.first_name)
+                ) ?? [],
         currentGameweek: (state) => {
             const now = new Date();
             return state.gameweeks

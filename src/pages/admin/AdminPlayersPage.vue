@@ -48,7 +48,7 @@ const onNewPlayer = () => {
 <template>
     <div class="wrapper">
         <div class="title flex items-center">
-            Players
+            Players ({{ players?.length }})
             <div class="flex justify-end">
                 <Button label="New Player" @click="onNewPlayer" class="new-btn" />
             </div>

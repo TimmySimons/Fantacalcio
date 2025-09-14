@@ -24,31 +24,70 @@ export class FootballUtil {
     public static isSelectedBenchPlayerDisabled = (
         playersOnField: PlayerContract[] | undefined,
         selectedPlayer: PlayerContract | undefined
-    ) => {
+    ): boolean => {
         if (!playersOnField || !selectedPlayer) return false;
-        if (playersOnField.map((p) => p.id).includes(selectedPlayer.id)) return false;
 
-        if (playersOnField.length >= 11) return true;
-        if (
-            !playersOnField.find((p) => p.position === PlayerPosition.Goalkeeper) &&
-            selectedPlayer.position !== PlayerPosition.Goalkeeper &&
-            playersOnField.length >= 10
-        ) {
+        // Already on the field → cannot be disabled
+        if (playersOnField.some((p) => p.id === selectedPlayer.id)) {
+            return false;
+        }
+
+        const total = playersOnField.length;
+
+        if (total >= 11) return true;
+
+        // Count current players by position
+        const counts = {
+            [PlayerPosition.Goalkeeper]: playersOnField.filter(
+                (p) => p.position === PlayerPosition.Goalkeeper
+            ).length,
+            [PlayerPosition.Defender]: playersOnField.filter(
+                (p) => p.position === PlayerPosition.Defender
+            ).length,
+            [PlayerPosition.Midfielder]: playersOnField.filter(
+                (p) => p.position === PlayerPosition.Midfielder
+            ).length,
+            [PlayerPosition.Forward]: playersOnField.filter(
+                (p) => p.position === PlayerPosition.Forward
+            ).length
+        };
+
+        const max = {
+            [PlayerPosition.Goalkeeper]: 1,
+            [PlayerPosition.Defender]: 5,
+            [PlayerPosition.Midfielder]: 5,
+            [PlayerPosition.Forward]: 3
+        };
+
+        const min = {
+            [PlayerPosition.Goalkeeper]: 1,
+            [PlayerPosition.Defender]: 3,
+            [PlayerPosition.Midfielder]: 2,
+            [PlayerPosition.Forward]: 1
+        };
+
+        // Rule 1: block if adding would exceed the max for that position
+        if (counts[selectedPlayer.position] >= max[selectedPlayer.position]) {
             return true;
         }
 
-        const includedPlayersOfType = playersOnField.filter(
-            (p) => p.position === selectedPlayer!.position
-        );
+        // Rule 2: prevent adding "wrong" positions if it would make meeting minimums impossible
+        const slotsLeft = 11 - total - 1; // after adding this player
+        let mustFill = 0;
 
-        if (selectedPlayer.position === 'Goalkeeper') {
-            if (includedPlayersOfType.length >= 1) return true;
-        } else if (includedPlayersOfType.length >= 4) return true;
+        for (const pos of Object.keys(min) as PlayerPosition[]) {
+            const deficit = min[pos] - (counts[pos] + (pos === selectedPlayer.position ? 1 : 0));
+            if (deficit > 0) mustFill += deficit;
+        }
+
+        if (mustFill > slotsLeft) {
+            return true;
+        }
 
         return false;
     };
 
-    public static getRandomTeam(players: PlayerContract[]) {
+    public static getRandomTeam(players: PlayerContract[]): PlayerContract[] {
         const shuffle = <T>(arr: T[]): T[] => [...arr].sort(() => Math.random() - 0.5);
 
         const keepers = players.filter((p) => p.position === PlayerPosition.Goalkeeper);
@@ -56,33 +95,39 @@ export class FootballUtil {
         const mids = players.filter((p) => p.position === PlayerPosition.Midfielder);
         const forwards = players.filter((p) => p.position === PlayerPosition.Forward);
 
+        // Ensure minimums
         if (keepers.length < 1) throw new Error('Not enough goalkeepers');
-        if (defenders.length < 2) throw new Error('Not enough defenders');
+        if (defenders.length < 3) throw new Error('Not enough defenders');
         if (mids.length < 2) throw new Error('Not enough midfielders');
-        if (forwards.length < 2) throw new Error('Not enough forwards');
+        if (forwards.length < 1) throw new Error('Not enough forwards');
 
-        const allowedFormations = [
-            [4, 4, 2],
-            [4, 3, 3],
-            [3, 5, 2],
-            [3, 4, 3],
-            [4, 2, 4],
-            [2, 4, 4]
-        ];
+        // Constraints
+        const min = { GK: 1, DEF: 3, MID: 2, FWD: 1 };
+        const max = { GK: 1, DEF: 5, MID: 5, FWD: 3 };
 
-        const validFormations = allowedFormations.filter(
-            ([d, m, f]) => defenders.length >= d && mids.length >= m && forwards.length >= f
-        );
+        // Generate all valid (DEF, MID, FWD) distributions that total 10 outfield players
+        const validFormations: [number, number, number][] = [];
+        for (let d = min.DEF; d <= Math.min(max.DEF, defenders.length); d++) {
+            for (let m = min.MID; m <= Math.min(max.MID, mids.length); m++) {
+                for (let f = min.FWD; f <= Math.min(max.FWD, forwards.length); f++) {
+                    if (d + m + f === 10) {
+                        validFormations.push([d, m, f]);
+                    }
+                }
+            }
+        }
 
         if (validFormations.length === 0) {
             throw new Error('Not enough players for any valid formation');
         }
 
+        // Pick a random valid formation
         const [dCount, mCount, fCount] =
             validFormations[Math.floor(Math.random() * validFormations.length)];
 
+        // Build the team
         const team: PlayerContract[] = [];
-        team.push(shuffle(keepers)[0]);
+        team.push(shuffle(keepers)[0]); // always 1 keeper
         team.push(...shuffle(defenders).slice(0, dCount));
         team.push(...shuffle(mids).slice(0, mCount));
         team.push(...shuffle(forwards).slice(0, fCount));

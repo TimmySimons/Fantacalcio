@@ -14,6 +14,9 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Missing parameters' });
     }
 
+    // TODO: add player position to query
+    // playerGameScore(position: "${position}")
+
     const query = `
         {
           football {
