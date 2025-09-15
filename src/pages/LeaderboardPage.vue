@@ -19,8 +19,9 @@ const footballScoreStore = useFootballScoreStore();
 footballScoreStore.getAllUsersGameweeksTeamPlayers();
 
 const managersWithScores = computed<ManagerContract[]>(() => {
+    const visibleManagers = managers.value?.filter((m) => !m.roles.includes('SUPER_ADMIN'));
     return (
-        managers.value
+        visibleManagers
             ?.map((m) => ({
                 ...m,
                 totalScore: useFootballScoreStore().totalUserScore(m.id) ?? 0,
@@ -31,7 +32,8 @@ const managersWithScores = computed<ManagerContract[]>(() => {
 });
 
 const topThree = computed<(ManagerContract | undefined)[]>(() => {
-    return [managersWithScores.value[1], managersWithScores.value[0], managersWithScores.value[2]];
+    const validWinners = managersWithScores.value;
+    return [validWinners[1], validWinners[0], validWinners[2]];
 });
 </script>
 

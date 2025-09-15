@@ -8,14 +8,11 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    const { slugs, gwslug } = req.query;
+    const { slugs, position, gwslug } = req.query;
 
-    if (!slugs || !gwslug) {
+    if (!slugs || !position || !gwslug) {
         return res.status(400).json({ error: 'Missing parameters' });
     }
-
-    // TODO: add player position to query
-    // playerGameScore(position: "${position}")
 
     const query = `
         {
@@ -26,7 +23,8 @@ export default async function handler(req, res) {
                 .join(', ')}]) {
               slug
               anyGameStats(so5FixtureSlug: "${gwslug}", last: 1) {
-                playerGameScore {
+                playerGameScore(position: "${position}") {
+                  position
                   score
                 }
               }

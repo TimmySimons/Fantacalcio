@@ -30,6 +30,12 @@
   padding: 8px 12px 4px 12px !important
 }
 
+.p-toast {
+  top: 20px !important;
+  right: 3% !important;
+  max-width: 94% !important;
+}
+
 .svg {
   height: 16px;
   width: 16px;

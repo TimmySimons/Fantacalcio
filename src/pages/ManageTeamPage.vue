@@ -11,12 +11,14 @@ import { useAuthStore } from '../stores/auth.store.ts';
 import { useFootballScoreStore } from '../stores/football-scores.store.ts';
 import FootballField from '../components/team/FootballField.vue';
 import ScoresPill from '../components/gameweeks/ScoresPill.vue';
+import { useToast } from 'primevue';
 
 const footballStore = useFootballStore();
 const { gameweeks, currentGameweek, nextGameweek, gameweek, gameweekTeam, userPlayers } =
     storeToRefs(footballStore);
 const authStore = useAuthStore();
 const { appUser } = storeToRefs(authStore);
+const toast = useToast();
 
 const footballScoreStore = useFootballScoreStore();
 footballScoreStore.getUserGameweeksTeamPlayers(useAuthStore().appUser!.id);
@@ -46,7 +48,11 @@ const isLoading = computed(() => {
     return !(gameweeks.value && gameweek.value && gameweekTeam.value && userPlayers.value);
 });
 
+const adminUnlocked = ref(false);
+
 const isLockedGameweek = computed(() => {
+    //if (appUser.value?.roles.includes('SUPER_ADMIN')) return false;
+    if (adminUnlocked.value) return false;
     return FootballUtil.isLockedGameweek(gameweek.value);
 });
 
@@ -67,7 +73,28 @@ const positionOrder: Record<string, number> = {
 
 const allIncludedPlayersOnField = computed(() => gameweekTeam.value?.team_players ?? []);
 
+const handleStartGameweek = () => {
+    if (authStore.hasSuperPowers) return;
+
+    if (gameweek.value && new Date(gameweek.value.start_date) < new Date()) {
+        toast.add({
+            severity: 'error',
+            summary: 'Too Late!',
+            detail: 'This gameweek has started. You can no longer change your team.',
+            life: 3000
+        });
+        console.warn('Gameweek has started. You can no longer change your team.');
+        throw new Error('Gameweek has started. You can no longer change your team.');
+    }
+};
+
 const onAddToTeam = async () => {
+    try {
+        handleStartGameweek();
+    } catch (error) {
+        return;
+    }
+
     if (
         selectedPlayer.value &&
         !allIncludedPlayersOnField.value.map((p) => p.id).includes(selectedPlayer.value.id)
@@ -87,6 +114,12 @@ const onAddToTeam = async () => {
 };
 
 const onBench = async () => {
+    try {
+        handleStartGameweek();
+    } catch (error) {
+        return;
+    }
+
     if (
         selectedPlayer.value &&
         allIncludedPlayersOnField.value.map((p) => p.id).includes(selectedPlayer.value.id)
@@ -158,14 +191,19 @@ const onFillRandom = () => {
 
         <GameweekDrawer v-if="gameweeks" :gameweeks="gameweeks" v-model="showDrawer" />
 
+        <div class="unlock" v-if="authStore.hasSuperPowers">
+            <span>Unlock</span>
+            <ToggleSwitch v-model="adminUnlocked" />
+        </div>
+
         <div class="content-container" :class="{ 'points-inline': pointsView }">
             <div
                 class="flex justify-end toggle"
                 :class="{ current: FootballUtil.isCurrentGameweek(gameweek) }"
             >
                 <template v-if="!isLockedGameweek">
-                    <span>Points</span>
-                    <ToggleSwitch v-model="pointsView" />
+                    <!--                    <span>Points</span>-->
+                    <!--                    <ToggleSwitch v-model="pointsView" />-->
                 </template>
                 <template v-else-if="FootballUtil.isCurrentGameweek(gameweek)" class="current">
                     <span></span>
@@ -246,13 +284,15 @@ const onFillRandom = () => {
 
 .substitutes {
     width: 100%;
-    min-height: 112px;
+    min-height: 196px;
     height: auto;
     border-radius: 12px;
     padding: 10px 2px;
     border: 1px solid #dcdcdc;
     background: #fff;
     box-shadow: 0px 3px 6px 0px rgb(0 0 0 / 9%);
+    max-width: 600px;
+    margin: 0 auto;
 
     :deep(.svg) {
         min-height: 36px;
@@ -261,7 +301,7 @@ const onFillRandom = () => {
 
     .scrollable {
         overflow-y: auto;
-        height: 94px;
+        max-height: 180px;
     }
 
     .none {
@@ -281,7 +321,7 @@ const onFillRandom = () => {
     display: flex;
     gap: 8px;
     justify-content: flex-end;
-    padding-top: 8px;
+    padding-top: 12px;
 
     .btn {
         flex: 1;
@@ -335,5 +375,18 @@ const onFillRandom = () => {
             color: darkred;
         }
     }
+}
+
+.unlock {
+    position: absolute;
+    right: 110px;
+    top: 8px;
+    font-size: 0.7em;
+    color: #8a8a8a;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
 }
 </style>

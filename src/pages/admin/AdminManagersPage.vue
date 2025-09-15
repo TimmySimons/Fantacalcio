@@ -32,6 +32,7 @@ const onClickManager = (manager: AppUserContract) => {
                     v-for="manager in managers"
                     :key="manager.id"
                     @click="onClickManager(manager)"
+                    :class="{ admin: manager.name === 'Hanne' }"
                 >
                     <template #content>
                         <div class="card-content">
@@ -70,6 +71,10 @@ const onClickManager = (manager: AppUserContract) => {
 
         .card {
             min-height: fit-content;
+
+            &.admin {
+                background: #e9dada;
+            }
         }
 
         .player {

@@ -141,7 +141,7 @@ const showPlayerDialog = ref(false);
         left: 0;
         height: 100%;
         width: 100%;
-        padding: 18px 6px;
+        padding: 2px 6px 12px;
         box-sizing: border-box;
         display: flex;
         flex-direction: column;

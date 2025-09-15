@@ -33,14 +33,22 @@ export const useFootballStore = defineStore('football-store', {
                 ? state.gameweeks.find((gw) => gw.start_date <= now && gw.end_date >= now)
                 : undefined;
         },
-        previousGameweek: (state) =>
-            state.gameweeks && state.gameweek
-                ? state.gameweeks.find((gw) => +gw.week === +state.gameweek!.week - 1)
-                : undefined,
-        nextGameweek: (state) =>
-            state.gameweeks && state.gameweek
-                ? state.gameweeks.find((gw) => +gw.week === +state.gameweek!.week + 1)
-                : undefined
+        previousGameweek: (state) => {
+            if (!state.gameweeks || !state.gameweek) return undefined;
+
+            const sorted = [...state.gameweeks].sort((a, b) => +a.week - +b.week);
+            const idx = sorted.findIndex((gw) => +gw.week === +state.gameweek!.week);
+
+            return idx > 0 ? sorted[idx - 1] : undefined;
+        },
+        nextGameweek: (state) => {
+            if (!state.gameweeks || !state.gameweek) return undefined;
+
+            const sorted = [...state.gameweeks].sort((a, b) => +a.week - +b.week);
+            const idx = sorted.findIndex((gw) => +gw.week === +state.gameweek!.week);
+
+            return idx >= 0 && idx < sorted.length - 1 ? sorted[idx + 1] : undefined;
+        }
     },
     actions: {
         async getManagers() {

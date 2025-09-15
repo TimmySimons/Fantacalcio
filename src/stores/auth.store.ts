@@ -8,7 +8,9 @@ export const useAuthStore = defineStore('auth-store', {
         authUser: User | null;
         appUser: AppUserContract | undefined;
     } => ({ authUser: null, appUser: undefined }),
-    getters: {},
+    getters: {
+        hasSuperPowers: (state) => state.appUser?.roles.includes('SUPER_ADMIN') ?? false
+    },
     actions: {
         async getAuthUser() {
             this.authUser = await AuthApi.getAuthUser();

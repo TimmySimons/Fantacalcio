@@ -22,13 +22,7 @@ gameweek.value = undefined;
 gameweekTeam.value = undefined;
 
 const isLoading = computed(() => {
-    return !(
-        manager.value &&
-        gameweeks.value &&
-        gameweek.value &&
-        gameweekTeam.value &&
-        gameweekTeam.value
-    );
+    return !(manager.value && gameweeks.value && gameweek.value);
 });
 
 watch(

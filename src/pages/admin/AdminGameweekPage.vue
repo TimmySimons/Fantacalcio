@@ -7,13 +7,15 @@ import { SorareApi } from '../../sorare/sorare.api.ts';
 import { FootballApi } from '../../supabase/football.api.ts';
 import GameweekPlayerCard from '../../components/admin/gameweeks/GameweekPlayerCard.vue';
 import { useRoute } from 'vue-router';
-import { Badge } from 'primevue';
+import { Badge, useToast } from 'primevue';
+import { PlayerPosition } from '../../model/player.contract.ts';
 
 const route = useRoute();
 const gameweekId = computed<string>(() => route.params.id as string);
 
 const adminStore = useAdminStore();
 const { gameweek, gameweekTeams } = storeToRefs(adminStore);
+const toast = useToast();
 
 adminStore.getGameweek(gameweekId.value).then(() => adminStore.getGameweekTeams(gameweekId.value));
 
@@ -24,28 +26,36 @@ const gameweekEnded = computed(() => {
 const allGameweekPlayers = computed(() => gameweekTeams.value?.flatMap((p) => p.players) ?? []);
 
 const sorareLoading = ref(false);
-const getGameweekScores = () => {
-    if (gameweek.value?.sorare_slug) {
-        const playerSlugs =
-            allGameweekPlayers.value.map((player) => player.player.sorare_slug) ?? [];
-
+const getGameweekScores = async () => {
+    if (gameweek.value && gameweek.value.sorare_slug) {
         sorareLoading.value = true;
-        SorareApi.getPlayersGameweekScores(gameweek.value.sorare_slug, playerSlugs).then((data) => {
+        try {
             const updates: { id: number; score: number }[] = [];
 
-            data.forEach((playerData) => {
-                const teamPlayer = allGameweekPlayers.value.find(
-                    (p) => p.player.sorare_slug === playerData.slug
+            const promises = Object.values(PlayerPosition).map((position) =>
+                SorareApi.getPlayersGameweekScores(
+                    gameweek.value!.sorare_slug,
+                    allGameweekPlayers.value
+                        .filter((player) => player.player.position === position)
+                        .map((player) => `${player.player.sorare_slug}`) ?? [],
+                    position
+                )
+            );
+
+            const results = await Promise.all(promises);
+            const allSorareScoresData = results.flat();
+
+            allSorareScoresData.forEach((playerData) => {
+                const teamPlayers = allGameweekPlayers.value.filter(
+                    (p) => p.player.sorare_slug === playerData.slug && p.score === null
                 );
 
-                if (
-                    teamPlayer &&
-                    teamPlayer.score === null &&
-                    playerData?.anyGameStats.length > 0
-                ) {
-                    updates.push({
-                        id: teamPlayer.teamPlayerId,
-                        score: playerData.anyGameStats[0].playerGameScore.score
+                if (teamPlayers.length > 0 && playerData?.anyGameStats.length > 0) {
+                    teamPlayers.forEach((teamPlayer) => {
+                        updates.push({
+                            id: teamPlayer.teamPlayerId,
+                            score: playerData.anyGameStats[0].playerGameScore.score
+                        });
                     });
                 }
             });
@@ -56,16 +66,49 @@ const getGameweekScores = () => {
                 await adminStore.getGameweek(gameweekId.value, true);
 
                 sorareLoading.value = false;
+
+                toast.add({
+                    severity: 'success',
+                    summary: 'Scores Updated',
+                    detail: 'Scores have been updated for all players.',
+                    life: 3000
+                });
             });
-        });
+        } catch (e: any) {
+            console.error(e);
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: e.message,
+                life: 3000
+            });
+            sorareLoading.value = false;
+        }
     }
 };
 
 const publishScores = () => {
     if (gameweek.value) {
-        adminStore.updateGameweekScorePublishedDate(gameweek.value.id).then(() => {
-            adminStore.getGameweek(gameweekId.value, true);
-        });
+        try {
+            adminStore.updateGameweekScorePublishedDate(gameweek.value.id).then(() => {
+                adminStore.getGameweek(gameweekId.value, true);
+
+                toast.add({
+                    severity: 'success',
+                    summary: 'Scores Published',
+                    detail: 'Scores are now visible to everyone.',
+                    life: 3000
+                });
+            });
+        } catch (e: any) {
+            console.error(e);
+            toast.add({
+                severity: 'error',
+                summary: 'Error',
+                detail: e.message,
+                life: 3000
+            });
+        }
     }
 };
 
@@ -92,7 +135,7 @@ const onScored = () => {
                         label="Get Scores"
                         @click="getGameweekScores"
                         class="new-btn"
-                        :disabled="sorareLoading"
+                        :disabled="sorareLoading || allGameweekPlayers.length === 0"
                         :loading="sorareLoading"
                     />
                     <div class="date">

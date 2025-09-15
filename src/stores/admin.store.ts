@@ -9,6 +9,7 @@ import {
 } from '../model/player.contract.ts';
 import type { AppUserContract } from '../model/app-user.contract.ts';
 import { GameweekApi } from '../supabase/football/gameweek.api.ts';
+import { useAuthStore } from './auth.store.ts';
 
 export const useAdminStore = defineStore('admin-store', {
     state: (): {
@@ -64,14 +65,22 @@ export const useAdminStore = defineStore('admin-store', {
                 ? state.gameweeks.find((gw) => gw.start_date <= now && gw.end_date >= now)
                 : undefined;
         },
-        previousGameweek: (state) =>
-            state.gameweeks && state.gameweek
-                ? state.gameweeks.find((gw) => +gw.week === +state.gameweek!.week - 1)
-                : undefined,
-        nextGameweek: (state) =>
-            state.gameweeks && state.gameweek
-                ? state.gameweeks.find((gw) => +gw.week === +state.gameweek!.week + 1)
-                : undefined
+        previousGameweek: (state) => {
+            if (!state.gameweeks || !state.gameweek) return undefined;
+
+            const sorted = [...state.gameweeks].sort((a, b) => +a.week - +b.week);
+            const idx = sorted.findIndex((gw) => +gw.week === +state.gameweek!.week);
+
+            return idx > 0 ? sorted[idx - 1] : undefined;
+        },
+        nextGameweek: (state) => {
+            if (!state.gameweeks || !state.gameweek) return undefined;
+
+            const sorted = [...state.gameweeks].sort((a, b) => +a.week - +b.week);
+            const idx = sorted.findIndex((gw) => +gw.week === +state.gameweek!.week);
+
+            return idx >= 0 && idx < sorted.length - 1 ? sorted[idx + 1] : undefined;
+        }
     },
     actions: {
         async getGameweeks() {
@@ -83,7 +92,11 @@ export const useAdminStore = defineStore('admin-store', {
             this.gameweek = await GameweekApi.getGameweek(gameweekId);
         },
         async getManagers() {
-            this.managers = await FootballApi.getAllManagers();
+            let managers = await FootballApi.getAllManagers();
+            if (!useAuthStore().hasSuperPowers) {
+                managers = managers.filter((m) => m.name !== 'Hanne');
+            }
+            this.managers = managers;
         },
         async getManagerPlayers(managerId: string) {
             this.managerPlayers = await FootballApi.getUserPlayers(managerId);

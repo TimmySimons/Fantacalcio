@@ -1,3 +1,5 @@
+import type { PlayerPosition } from '../model/player.contract.ts';
+
 export class SorareApi {
     public static async getPlayerStats(slug: string) {
         const vercelPath = import.meta.env.VITE_VERCEL_URL;
@@ -23,7 +25,8 @@ export class SorareApi {
 
     public static async getPlayersGameweekScores(
         gwSlug: string,
-        slugs: string[]
+        slugs: string[],
+        position: PlayerPosition
     ): Promise<
         {
             slug: string;
@@ -36,8 +39,14 @@ export class SorareApi {
     > {
         const vercelPath = import.meta.env.VITE_VERCEL_URL;
 
+        if (slugs.length === 0 || !position || !gwSlug) {
+            return [];
+        }
+
         return await fetch(
-            `${vercelPath}/api/gameweek-scores?gwslug=${gwSlug}&slugs=${slugs.join(',')}`
+            `${vercelPath}/api/gameweek-scores?gwslug=${gwSlug}&position=${position}&slugs=${slugs.join(
+                ','
+            )}`
         )
             .then((res) => res.json())
             .then((data) => {

@@ -11,10 +11,10 @@ export interface BasePlayerContract {
     first_name: string;
     last_name: string | undefined;
     club_name_short: string | undefined;
+    position: PlayerPosition;
 }
 
 export interface PlayerContract extends BasePlayerContract {
-    position: PlayerPosition;
     next_opponent_club: string | undefined;
     // Sorare data
     sorare_last_updated: Date | undefined;

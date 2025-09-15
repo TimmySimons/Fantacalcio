@@ -292,7 +292,8 @@ export class FootballApi {
                     first_name,
                     last_name,
                     sorare_slug,
-                    club_name_short
+                    club_name_short,
+                    position
                   )
                 )
               `
@@ -303,14 +304,16 @@ export class FootballApi {
             throw new Error(`Failed to get all gameweek players: ${error.message}`);
         }
 
-        return data.map((d) => ({
-            team: { name: (d.Users as any).team_name, managerName: (d.Users as any).name },
-            players: d.TeamPlayers.map((p) => ({
-                player: p.Players as any,
-                teamPlayerId: p.id,
-                score: p.score
-            }))
-        }));
+        return data
+            .filter((d) => (d.Users as any).name !== 'Hanne')
+            .map((d) => ({
+                team: { name: (d.Users as any).team_name, managerName: (d.Users as any).name },
+                players: d.TeamPlayers.map((p) => ({
+                    player: p.Players as any,
+                    teamPlayerId: p.id,
+                    score: p.score
+                }))
+            }));
     }
 
     public static async updateGameweekPlayerScores(
