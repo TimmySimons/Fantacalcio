@@ -23,6 +23,10 @@ const gameweekEnded = computed(() => {
     return (gameweek.value && new Date(gameweek.value.end_date) < new Date()) ?? false;
 });
 
+const gameweekStarted = computed(() => {
+    return (gameweek.value && new Date(gameweek.value.start_date) < new Date()) ?? false;
+});
+
 const allGameweekPlayers = computed(() => gameweekTeams.value?.flatMap((p) => p.players) ?? []);
 
 const sorareLoading = ref(false);
@@ -129,7 +133,11 @@ const onScored = () => {
         </div>
 
         <template v-if="gameweek">
-            <div class="actions flex" v-if="gameweekEnded">
+            <Badge v-if="!gameweekEnded" class="info" severity="danger">
+                Gameweek ends:
+                {{ dayjs(gameweek.end_date).format('DD MMM YYYY HH:mm') }}
+            </Badge>
+            <div class="actions flex" v-if="gameweekStarted">
                 <div class="">
                     <Button
                         label="Get Scores"
@@ -166,10 +174,6 @@ const onScored = () => {
                     </div>
                 </div>
             </div>
-            <Badge v-else class="info">
-                Gameweek ends:
-                {{ dayjs(gameweek.end_date).format('DD MMM YYYY HH:mm') }}
-            </Badge>
         </template>
 
         <div class="flex-col players">
@@ -244,5 +248,9 @@ const onScored = () => {
 .pi {
     color: #333333;
     margin-right: 0.5rem;
+}
+
+.info {
+    margin-bottom: 12px;
 }
 </style>
