@@ -128,6 +128,10 @@ defineProps<{
 
         .team {
             opacity: 0.7;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100px;
         }
 
         .score {

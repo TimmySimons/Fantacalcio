@@ -115,7 +115,7 @@ const showPlayerDialog = ref(false);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 110px;
+            max-width: 140px;
         }
     }
 
