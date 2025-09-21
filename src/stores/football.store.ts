@@ -11,6 +11,7 @@ interface FootballState {
     gameweeks: GameweekContract[] | undefined;
     gameweek: GameweekContract | undefined;
     gameweekTeam: TeamContract | undefined;
+    prevGameweekTeam: TeamContract | undefined;
     userPlayers: PlayerContract[] | undefined;
     managers: AppUserContract[] | undefined;
     manager: AppUserContract | undefined;
@@ -21,6 +22,7 @@ export const useFootballStore = defineStore('football-store', {
         gameweeks: undefined,
         gameweek: undefined,
         gameweekTeam: undefined,
+        prevGameweekTeam: undefined,
         userPlayers: undefined,
         managers: undefined,
         manager: undefined,
@@ -93,6 +95,10 @@ export const useFootballStore = defineStore('football-store', {
         async getPlayer(id: string, forceRefresh?: boolean) {
             if (forceRefresh) this.playerDetailed = undefined;
             this.playerDetailed = await FootballApi.getPlayer(id);
+        },
+        async getPrevGameweekTeam(gwId: string, userId: string) {
+            this.prevGameweekTeam = undefined;
+            this.prevGameweekTeam = await FootballApi.getGameweekTeam(gwId, userId);
         }
     }
 });

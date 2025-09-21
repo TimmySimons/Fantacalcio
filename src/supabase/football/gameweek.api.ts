@@ -41,4 +41,19 @@ export class GameweekApi {
 
         if (error) throw error;
     }
+
+    public static async getUsersGameweekScores(gameweekId: string): Promise<
+        {
+            user_id: string;
+            total_score: number;
+        }[]
+    > {
+        const { data, error } = await supabase.rpc('get_user_gameweek_scores', {
+            gameweek_id_input: gameweekId
+        });
+
+        if (error) throw error;
+
+        return data;
+    }
 }

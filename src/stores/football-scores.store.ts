@@ -5,15 +5,23 @@ import type {
 } from '../model/gameweek.contract.ts';
 import { FootballApi } from '../supabase/football.api.ts';
 import type { PlayerAverageScoresContract } from '../model/player.contract.ts';
+import { GameweekApi } from '../supabase/football/gameweek.api.ts';
 
 interface FootballScoreState {
     userGameWeeksTeamPlayers: GameweekTeamPlayerContract[] | undefined;
     allUsersGamesWeekTeamPlayers: UserGameweeksTeamPlayersContract[] | undefined;
+    usersGameweekScores:
+        | {
+              user_id: string;
+              total_score: number;
+          }[]
+        | undefined;
 }
 export const useFootballScoreStore = defineStore('football-scores-store', {
     state: (): FootballScoreState => ({
         userGameWeeksTeamPlayers: undefined,
-        allUsersGamesWeekTeamPlayers: undefined
+        allUsersGamesWeekTeamPlayers: undefined,
+        usersGameweekScores: undefined
     }),
     getters: {
         totalUserScore() {
@@ -56,6 +64,9 @@ export const useFootballScoreStore = defineStore('football-scores-store', {
                 playerId,
                 mapSorareScoresToScoresContract(sorareScores)
             );
+        },
+        async getUsersGameweekScores(gameweekId: string) {
+            this.usersGameweekScores = await GameweekApi.getUsersGameweekScores(gameweekId);
         }
     }
 });
@@ -73,6 +84,7 @@ const mapSorareScoresToScoresContract = (sorareData: any): PlayerAverageScoresCo
         last_forty_appearances: sorareData.lastFortySo5Appearances,
         average_forty: sorareData.average40,
         average_forty_decisive: sorareData.decisiveAverage40,
-        average_forty_all_round: sorareData.allAroundAverage40
+        average_forty_all_round: sorareData.allAroundAverage40,
+        updated_at: new Date()
     };
 };

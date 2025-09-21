@@ -264,7 +264,7 @@ export class FootballApi {
     ): Promise<void> {
         const { error } = await supabase
             .from('PlayerSorareAverages')
-            .update(scores)
+            .update({ ...scores, updated_at: new Date().toISOString() })
             .eq('player_id', playerId);
 
         if (error) {
@@ -336,11 +336,13 @@ export class FootballApi {
         id: number;
         score: number | null;
     }): Promise<void> {
-        console.log('Updating gameweek player score...', update);
+        console.log('Overriding gameweek player score...', update);
+
+        const isScoreOverride = update.score !== null;
 
         const { data, error } = await supabase
             .from('TeamPlayers')
-            .update({ score: update.score })
+            .update({ score: update.score, is_score_override: isScoreOverride })
             .eq('id', update.id);
 
         if (error) {

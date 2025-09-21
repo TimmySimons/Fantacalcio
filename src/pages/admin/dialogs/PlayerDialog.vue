@@ -31,24 +31,32 @@ watch(
     async (slug) => {
         sorareSlug.value = slug;
 
-        if (slug && props.player && !props.player.PlayerSorareAverages) {
-            await SorareApi.getPlayersAverageScores([slug]).then((scores) => {
-                // TODO: update averages
-
-                const playerScores = scores[0];
-                if (playerScores) {
-                    console.log('create', props.player);
-                    console.log('createScores', playerScores);
-
-                    footballScoreStore
-                        .createPlayerAverageScores(props.player!.id, playerScores)
-                        .then(() => {
-                            emit('scores-fetched');
-                        });
-                }
-            });
-        } else {
-            console.log('SKIP create scores');
+        if (slug && props.player) {
+            if (
+                !props.player.PlayerSorareAverages ||
+                dayjs().diff(props.player.PlayerSorareAverages.updated_at, 'hour') >= 4
+            ) {
+                await SorareApi.getPlayersAverageScores([slug]).then((scores) => {
+                    const playerScores = scores[0];
+                    if (playerScores) {
+                        if (!props.player!.PlayerSorareAverages) {
+                            console.log('createScores', playerScores);
+                            footballScoreStore
+                                .createPlayerAverageScores(props.player!.id, playerScores)
+                                .then(() => {
+                                    emit('scores-fetched');
+                                });
+                        } else {
+                            console.log('updateScores', playerScores);
+                            footballScoreStore
+                                .updatePlayerAverageScores(props.player!.id, playerScores)
+                                .then(() => {
+                                    emit('scores-fetched');
+                                });
+                        }
+                    }
+                });
+            }
         }
     },
     { immediate: true }

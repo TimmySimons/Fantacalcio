@@ -30,7 +30,7 @@ const gameweekScore = computed(() => {
 
 <template>
     <div class="scores">
-        <div class="score gw-score">+{{ gameweekScore ? Math.round(gameweekScore) : '?' }}</div>
+        <div class="score gw-score">+{{ gameweekScore ? Math.round(gameweekScore) : ' ?' }}</div>
         <div class="score total-score">{{ totalScore ? Math.round(totalScore) : 0 }}</div>
     </div>
 </template>

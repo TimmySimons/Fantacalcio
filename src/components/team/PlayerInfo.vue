@@ -44,10 +44,10 @@ const showPlayerDialog = ref(false);
             <div>{{ selectedPlayer.position }}</div>
             <div>{{ selectedPlayer.club_name_short }}</div>
         </div>
-        <div class="scores">
-            <div>0</div>
-            <div class="new">+0</div>
-        </div>
+        <!--        <div class="scores">-->
+        <!--            <div>0</div>-->
+        <!--            <div class="new">+0</div>-->
+        <!--        </div>-->
         <div
             v-if="canMove"
             class="move"

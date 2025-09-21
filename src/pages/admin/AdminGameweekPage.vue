@@ -51,7 +51,7 @@ const getGameweekScores = async () => {
 
             allSorareScoresData.forEach((playerData) => {
                 const teamPlayers = allGameweekPlayers.value.filter(
-                    (p) => p.player.sorare_slug === playerData.slug && p.score === null
+                    (p) => p.player.sorare_slug === playerData.slug
                 );
 
                 if (teamPlayers.length > 0 && playerData?.anyGameStats.length > 0) {
@@ -210,7 +210,10 @@ const onScored = () => {
     .team-name {
         font-weight: bold;
         font-size: 0.8em;
-        margin-top: 16px;
+        position: sticky;
+        top: 0;
+        padding: 12px 0 8px 0;
+        background: whitesmoke;
     }
 }
 

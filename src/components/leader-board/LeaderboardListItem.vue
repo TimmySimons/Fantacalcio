@@ -5,6 +5,7 @@ import { useFootballScoreStore } from '../../stores/football-scores.store.ts';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import type { ManagerContract } from '../../model/manager.contract.ts';
+import { computed } from 'vue';
 
 const props = defineProps<{
     place: number;
@@ -12,12 +13,18 @@ const props = defineProps<{
 }>();
 
 const footballScoreStore = useFootballScoreStore();
-const { totalUserScore } = storeToRefs(footballScoreStore);
+const { totalUserScore, usersGameweekScores } = storeToRefs(footballScoreStore);
 const router = useRouter();
 
 const onClick = () => {
     router.push({ name: 'ManagerProfile', params: { id: props.manager.id } });
 };
+
+const previousGwScore = computed<number | undefined>(() => {
+    const score = usersGameweekScores.value?.find((s) => s.user_id === props.manager.id)
+        ?.total_score;
+    return score ? Math.round(score) : 0;
+});
 </script>
 
 <template>
@@ -29,7 +36,7 @@ const onClick = () => {
             <div>{{ manager.team_name }}</div>
             <div>{{ manager.name }}</div>
         </div>
-        <div class="gw">+{{ 0 }}</div>
+        <div class="gw">+{{ previousGwScore }}</div>
         <div class="total">{{ totalUserScore(manager.id) }}</div>
         <component :is="CaretIcon" class="svg caret" />
     </div>

@@ -51,17 +51,12 @@ const isDisabled = computed(() => {
         <span class="name">{{ player.last_name || player.first_name }}</span>
         <div v-if="showPoints" class="points-wrapper">
             <div class="points gw">
-                <span
-                    v-if="
-                        !!gameweek?.scores_published_date &&
-                        player.score !== null &&
-                        player.score !== undefined
-                    "
+                <span v-if="!!gameweek?.scores_published_date && !!player.score"
                     >+{{ Math.round(player.score) }}</span
                 >
                 <span v-else>-</span>
             </div>
-            <div class="points total">0</div>
+            <!--            <div class="points total">0</div>-->
         </div>
     </div>
 </template>
@@ -194,7 +189,7 @@ const isDisabled = computed(() => {
     min-width: 30px;
     text-align: center;
     border-radius: 4px;
-    font-size: 0.6em;
+    font-size: 0.7em;
     font-weight: bold;
 
     &.total {

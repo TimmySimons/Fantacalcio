@@ -14,14 +14,23 @@ import ScoresPill from '../components/gameweeks/ScoresPill.vue';
 import { useToast } from 'primevue';
 
 const footballStore = useFootballStore();
-const { gameweeks, currentGameweek, nextGameweek, gameweek, gameweekTeam, userPlayers } =
-    storeToRefs(footballStore);
+const {
+    gameweeks,
+    currentGameweek,
+    nextGameweek,
+    gameweek,
+    gameweekTeam,
+    userPlayers,
+    prevGameweekTeam
+} = storeToRefs(footballStore);
 const authStore = useAuthStore();
 const { appUser } = storeToRefs(authStore);
 const toast = useToast();
 
 const footballScoreStore = useFootballScoreStore();
-footballScoreStore.getUserGameweeksTeamPlayers(useAuthStore().appUser!.id);
+if (appUser.value) {
+    footballScoreStore.getUserGameweeksTeamPlayers(useAuthStore().appUser!.id);
+}
 footballScoreStore.getAllUsersGameweeksTeamPlayers();
 
 footballStore.getAllGameweeks().then(() => {
@@ -35,12 +44,22 @@ watch(gameweek, () => {
     if (gameweek.value) {
         gameweekTeam.value = undefined;
         selectedPlayer.value = undefined;
-        footballStore.getGameweekTeam(gameweek.value.id, appUser.value!.id).then(async () => {
-            if (!gameweekTeam.value) {
-                await footballStore.createGameweekTeam(gameweek.value!.id);
-                await footballStore.getGameweekTeam(gameweek.value!.id, appUser.value!.id);
+        if (appUser.value) {
+            footballStore.getGameweekTeam(gameweek.value.id, appUser.value!.id).then(async () => {
+                if (!gameweekTeam.value) {
+                    await footballStore.createGameweekTeam(gameweek.value!.id);
+                    await footballStore.getGameweekTeam(gameweek.value!.id, appUser.value!.id);
+                }
+            });
+
+            footballStore.prevGameweekTeam = undefined;
+            if (footballStore.previousGameweek) {
+                footballStore.getPrevGameweekTeam(
+                    footballStore.previousGameweek.id,
+                    appUser.value!.id
+                );
             }
-        });
+        }
     }
 });
 
@@ -178,10 +197,26 @@ const onFillRandom = () => {
         }
     }
 };
+
+const loadPreviousTeam = () => {
+    if (
+        gameweekTeam.value &&
+        prevGameweekTeam.value &&
+        prevGameweekTeam.value.team_players.length > 0
+    ) {
+        footballStore.removeAllTeamPlayers(gameweekTeam.value.id).then(async () => {
+            await footballStore.addTeamPlayers(
+                gameweekTeam.value!.id,
+                prevGameweekTeam.value!.team_players.map((p) => p.id)
+            );
+            await footballStore.getGameweekTeam(gameweek.value!.id, appUser.value!.id);
+        });
+    }
+};
 </script>
 
 <template>
-    <div class="wrapper">
+    <div class="wrapper" v-if="appUser">
         <GameweekBanner
             :gameweek="gameweek"
             :complete="allIncludedPlayersOnField.length === 11"
@@ -228,7 +263,16 @@ const onFillRandom = () => {
             >
                 <template #options>
                     <div class="buttons" v-if="!isLockedGameweek">
-                        <div class="btn disabled">Load Previous Team</div>
+                        <div
+                            class="btn"
+                            :class="{
+                                disabled:
+                                    !prevGameweekTeam || prevGameweekTeam.team_players.length === 0
+                            }"
+                            @click="loadPreviousTeam"
+                        >
+                            Load Previous Team
+                        </div>
                         <div class="btn" @click="onFillRandom">Fill Random</div>
                         <div
                             class="btn"
@@ -260,6 +304,11 @@ const onFillRandom = () => {
                 />
             </div>
         </div>
+    </div>
+    <div v-else class="not-setup">
+        <div><i class="pi pi-wrench" /></div>
+        <div>Your account is not complete.</div>
+        <div>Talk to Timmy!</div>
     </div>
 </template>
 
@@ -388,5 +437,16 @@ const onFillRandom = () => {
     align-items: center;
     gap: 8px;
     z-index: 100;
+}
+
+.not-setup {
+    color: white;
+    font-size: 1em;
+    text-align: center;
+    padding: 100px 0;
+
+    i {
+        font-size: 1em;
+    }
 }
 </style>

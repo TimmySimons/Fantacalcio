@@ -13,8 +13,17 @@ onMounted(() => {
 });
 
 const footballStore = useFootballStore();
-const { managers } = storeToRefs(footballStore);
+const { managers, previousGameweek } = storeToRefs(footballStore);
 footballStore.getManagers();
+footballStore.getAllGameweeks().then(() => {
+    if (footballStore.currentGameweek) {
+        footballStore.getGameweek(footballStore.currentGameweek.id).then(() => {
+            if (previousGameweek.value) {
+                footballScoreStore.getUsersGameweekScores(previousGameweek.value.id);
+            }
+        });
+    }
+});
 const footballScoreStore = useFootballScoreStore();
 footballScoreStore.getAllUsersGameweeksTeamPlayers();
 

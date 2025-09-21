@@ -63,4 +63,5 @@ export interface PlayerAverageScoresContract {
     average_forty: number | null;
     average_forty_decisive: number | null;
     average_forty_all_round: number | null;
+    updated_at: Date;
 }
