@@ -60,7 +60,8 @@ const currGwScore = computed<number | undefined>(() => {
 
     .laurel {
         position: absolute;
-        top: 8px;
+        top: 50%;
+        transform: translateY(-50%);
         left: 12px;
         height: 36px;
         min-width: 36px;
