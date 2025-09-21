@@ -135,7 +135,10 @@ const onNewPlayer = () => {
     .section-header {
         font-size: 0.9em;
         font-weight: bold;
-        margin: 16px 0 4px 0;
+        position: sticky;
+        top: 0;
+        padding: 0 0 8px 0;
+        background: whitesmoke;
 
         &:first-child {
             margin-top: 0;

@@ -20,7 +20,7 @@ const onClick = () => {
     router.push({ name: 'ManagerProfile', params: { id: props.manager.id } });
 };
 
-const previousGwScore = computed<number | undefined>(() => {
+const currGwScore = computed<number | undefined>(() => {
     const score = usersGameweekScores.value?.find((s) => s.user_id === props.manager.id)
         ?.total_score;
     return score ? Math.round(score) : 0;
@@ -36,7 +36,7 @@ const previousGwScore = computed<number | undefined>(() => {
             <div>{{ manager.team_name }}</div>
             <div>{{ manager.name }}</div>
         </div>
-        <div class="gw">+{{ previousGwScore }}</div>
+        <div class="gw">+{{ currGwScore }}</div>
         <div class="total">{{ totalUserScore(manager.id) }}</div>
         <component :is="CaretIcon" class="svg caret" />
     </div>

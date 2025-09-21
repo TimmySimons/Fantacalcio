@@ -29,6 +29,14 @@ const gameweekStarted = computed(() => {
 
 const allGameweekPlayers = computed(() => gameweekTeams.value?.flatMap((p) => p.players) ?? []);
 
+function chunkArray<T>(arr: T[], size: number): T[][] {
+    const chunks: T[][] = [];
+    for (let i = 0; i < arr.length; i += size) {
+        chunks.push(arr.slice(i, i + size));
+    }
+    return chunks;
+}
+
 const sorareLoading = ref(false);
 const getGameweekScores = async () => {
     if (gameweek.value && gameweek.value.sorare_slug) {
@@ -36,23 +44,30 @@ const getGameweekScores = async () => {
         try {
             const updates: { id: number; score: number }[] = [];
 
-            const promises = Object.values(PlayerPosition).map((position) =>
-                SorareApi.getPlayersGameweekScores(
-                    gameweek.value!.sorare_slug,
-                    allGameweekPlayers.value
-                        .filter((player) => player.player.position === position)
-                        .map((player) => `${player.player.sorare_slug}`) ?? [],
-                    position
-                )
-            );
+            const promises = Object.values(PlayerPosition).flatMap((position) => {
+                const players = allGameweekPlayers.value.filter(
+                    (player) => player.player.position === position
+                );
+
+                const slugs = players.map((p) => p.player.sorare_slug);
+                const chunks = chunkArray(slugs, 15);
+
+                return chunks.map((group) =>
+                    SorareApi.getPlayersGameweekScores(gameweek.value!.sorare_slug, group, position)
+                );
+            });
 
             const results = await Promise.all(promises);
             const allSorareScoresData = results.flat();
+
+            console.log('test', allSorareScoresData);
 
             allSorareScoresData.forEach((playerData) => {
                 const teamPlayers = allGameweekPlayers.value.filter(
                     (p) => p.player.sorare_slug === playerData.slug
                 );
+
+                console.log('teamPlayers', teamPlayers);
 
                 if (teamPlayers.length > 0 && playerData?.anyGameStats.length > 0) {
                     teamPlayers.forEach((teamPlayer) => {
@@ -63,6 +78,8 @@ const getGameweekScores = async () => {
                     });
                 }
             });
+
+            console.log('updates', updates);
 
             FootballApi.updateGameweekPlayerScores(updates).then(async () => {
                 await adminStore.updateGameweekScoredDate(gameweek.value!.id);
