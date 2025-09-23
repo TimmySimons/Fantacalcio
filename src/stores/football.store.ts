@@ -32,7 +32,8 @@ export const useFootballStore = defineStore('football-store', {
         currentGameweek: (state) => {
             const now = new Date();
             return state.gameweeks
-                ? state.gameweeks.find((gw) => gw.start_date <= now && gw.end_date >= now)
+                ? state.gameweeks.find((gw) => gw.start_date <= now && gw.end_date >= now) ??
+                      [...state.gameweeks].reverse().find((gw) => gw.end_date < now)
                 : undefined;
         },
         previousGameweek: (state) => {
