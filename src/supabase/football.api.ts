@@ -351,4 +351,88 @@ export class FootballApi {
             console.log('Updated row:', data);
         }
     }
+
+    public static async getPreviousGameweekTeam(
+        userId: string,
+        previousGameweekId: string
+    ): Promise<{ id: string; playerIds: string[] } | undefined> {
+        const { data, error } = await supabase
+            .from('Teams')
+            .select('id, TeamPlayers(player_id)')
+            .eq('gameweek_id', previousGameweekId)
+            .eq('user_id', userId)
+            .maybeSingle();
+
+        if (error) throw error;
+        if (!data) return undefined;
+
+        return {
+            id: data.id,
+            playerIds: data.TeamPlayers.map((tp) => tp.player_id)
+        };
+    }
+
+    public static async getIncompleteTeamManagers(gameweekId: string): Promise<string[]> {
+        const { data, error } = await supabase
+            .from('Users')
+            .select(
+                `
+                id,
+                name,
+                Teams!left (
+                  id,
+                  TeamPlayers (id)
+                )
+              `
+            )
+            .eq('Teams.gameweek_id', gameweekId)
+            .neq('id', '8115f3d5-7eda-4b26-b707-20b01d449cf9'); // exclude hanne
+
+        if (error) throw error;
+
+        const missing = data
+            .filter((user) => {
+                const teams = (user.Teams as any[]) || [];
+                if (teams.length === 0) return true;
+                const teamPlayers = (teams[0]?.TeamPlayers as any[]) || [];
+                return teamPlayers.length < 11;
+            })
+            .map((user) => user.id);
+
+        console.log('Incomplete team managers:', missing.length);
+        return missing;
+    }
+
+    public static async autoAssignPreviousTeams(
+        gameweekId: string,
+        previousGameweekId: string
+    ): Promise<{ assigned: number; failed: number }> {
+        const incompleteUserIds = await this.getIncompleteTeamManagers(gameweekId);
+
+        let assigned = 0;
+        let failed = 0;
+
+        for (const userId of incompleteUserIds) {
+            try {
+                const prevTeam = await this.getPreviousGameweekTeam(userId, previousGameweekId);
+
+                console.log(`Auto-assigning team for user ${userId}...`, prevTeam);
+
+                if (prevTeam && prevTeam.playerIds.length > 0) {
+                    await this.createGameweekTeam(gameweekId, userId);
+                    const newTeamData = await this.getGameweekTeam(gameweekId, userId);
+
+                    if (newTeamData?.id) {
+                        await this.addTeamPlayers(newTeamData.id, prevTeam.playerIds);
+                        assigned++;
+                    }
+                }
+            } catch (error) {
+                console.error(`Failed to auto-assign team for user ${userId}:`, error);
+                failed++;
+            }
+        }
+
+        return { assigned, failed };
+    }
 }

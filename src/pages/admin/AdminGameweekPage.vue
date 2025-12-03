@@ -17,7 +17,34 @@ const adminStore = useAdminStore();
 const { gameweek, gameweekTeams } = storeToRefs(adminStore);
 const toast = useToast();
 
-adminStore.getGameweek(gameweekId.value).then(() => adminStore.getGameweekTeams(gameweekId.value));
+const isLoading = ref(true);
+
+adminStore.getGameweek(gameweekId.value).then(async () => {
+    await adminStore.getGameweekTeams(gameweekId.value);
+
+    if (gameweek.value && new Date(gameweek.value.start_date) < new Date()) {
+        try {
+            console.log('Auto-assigning teams...');
+            await adminStore.getGameweeks();
+            const result = await adminStore.autoAssignPreviousTeams();
+            if (result.assigned > 0) {
+                await adminStore.getGameweekTeams(gameweekId.value);
+                toast.add({
+                    severity: 'info',
+                    summary: 'Teams Auto-Assigned',
+                    detail: `Assigned ${result.assigned} team(s) from previous gameweek${
+                        result.failed > 0 ? `, ${result.failed} failed` : ''
+                    }.`,
+                    life: 3000
+                });
+            }
+        } catch (error) {
+            console.error('Auto-assign error:', error);
+        }
+    }
+
+    isLoading.value = false;
+});
 
 const gameweekEnded = computed(() => {
     return (gameweek.value && new Date(gameweek.value.end_date) < new Date()) ?? false;
@@ -149,67 +176,79 @@ const onScored = () => {
             </div>
         </div>
 
-        <template v-if="gameweek">
-            <Badge v-if="!gameweekEnded" class="info" severity="danger">
-                Gameweek ends:
-                {{ dayjs(gameweek.end_date).format('DD MMM YYYY HH:mm') }}
-            </Badge>
-            <div class="actions flex" v-if="gameweekStarted">
-                <div class="">
-                    <Button
-                        label="Get Scores"
-                        @click="getGameweekScores"
-                        class="new-btn"
-                        :disabled="sorareLoading || allGameweekPlayers.length === 0"
-                        :loading="sorareLoading"
-                    />
-                    <div class="date">
-                        Last fetched:
-                        {{
-                            gameweek?.scores_fetched_date
-                                ? dayjs(gameweek?.scores_fetched_date).format('DD MMM HH:mm')
-                                : '-'
-                        }}
+        <template v-if="!isLoading">
+            <template v-if="gameweek">
+                <Badge v-if="!gameweekEnded" class="info" severity="danger">
+                    Gameweek ends:
+                    {{ dayjs(gameweek.end_date).format('DD MMM YYYY HH:mm') }}
+                </Badge>
+                <div class="actions flex" v-if="gameweekStarted">
+                    <div class="">
+                        <Button
+                            label="Get Scores"
+                            @click="getGameweekScores"
+                            class="new-btn"
+                            :disabled="sorareLoading || allGameweekPlayers.length === 0"
+                            :loading="sorareLoading"
+                        />
+                        <div class="date">
+                            Last fetched:
+                            {{
+                                gameweek?.scores_fetched_date
+                                    ? dayjs(gameweek?.scores_fetched_date).format('DD MMM HH:mm')
+                                    : '-'
+                            }}
+                        </div>
+                    </div>
+                    <div class="">
+                        <Button
+                            label="Publish Scores"
+                            @click="publishScores"
+                            class="new-btn"
+                            :disabled="
+                                !gameweek?.scores_fetched_date || !!gameweek?.scores_published_date
+                            "
+                        />
+                        <div class="date">
+                            Published on:
+                            {{
+                                gameweek?.scores_published_date
+                                    ? dayjs(gameweek?.scores_published_date).format('DD MMM HH:mm')
+                                    : '-'
+                            }}
+                        </div>
                     </div>
                 </div>
-                <div class="">
-                    <Button
-                        label="Publish Scores"
-                        @click="publishScores"
-                        class="new-btn"
-                        :disabled="
-                            !gameweek?.scores_fetched_date || !!gameweek?.scores_published_date
-                        "
+            </template>
+
+            <div class="flex-col players" v-if="gameweekTeams">
+                <div
+                    v-for="gwTeam in gameweekTeams.sort((a, b) =>
+                        a.team.name.localeCompare(b.team.name)
+                    )"
+                    :key="gwTeam.team.name"
+                    class="team"
+                >
+                    <div class="team-name">{{ gwTeam.team.name }}</div>
+                    <GameweekPlayerCard
+                        v-for="player in [...gwTeam.players].sort((a, b) =>
+                            (a.player.last_name ?? a.player.first_name).localeCompare(
+                                b.player.last_name ?? b.player.first_name
+                            )
+                        )"
+                        :key="player.player.id"
+                        :player="player.player"
+                        :team-player-id="player.teamPlayerId"
+                        :score="player.score"
+                        @scored="onScored"
                     />
-                    <div class="date">
-                        Published on:
-                        {{
-                            gameweek?.scores_published_date
-                                ? dayjs(gameweek?.scores_published_date).format('DD MMM HH:mm')
-                                : '-'
-                        }}
-                    </div>
+                    <div class="none" v-if="gwTeam.players.length === 0">No players</div>
                 </div>
             </div>
         </template>
 
-        <div class="flex-col players">
-            <div v-for="gwTeam in gameweekTeams" :key="gwTeam.team.name" class="team">
-                <div class="team-name">{{ gwTeam.team.name }}</div>
-                <GameweekPlayerCard
-                    v-for="player in [...gwTeam.players].sort((a, b) =>
-                        (a.player.last_name ?? a.player.first_name).localeCompare(
-                            b.player.last_name ?? b.player.first_name
-                        )
-                    )"
-                    :key="player.player.id"
-                    :player="player.player"
-                    :team-player-id="player.teamPlayerId"
-                    :score="player.score"
-                    @scored="onScored"
-                />
-                <div class="none" v-if="gwTeam.players.length === 0">No players</div>
-            </div>
+        <div class="loading" v-if="isLoading">
+            <i class="pi pi-spin pi-spinner" style="font-size: 24px"></i>
         </div>
     </div>
 </template>

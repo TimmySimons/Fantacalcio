@@ -141,6 +141,21 @@ export const useAdminStore = defineStore('admin-store', {
             if (this.gameweek) {
                 this.gameweek.scores_published_date = new Date();
             }
+        },
+        async autoAssignPreviousTeams(): Promise<{ assigned: number; failed: number }> {
+            if (!this.gameweek || !this.gameweeks) {
+                throw new Error('Gameweek data not loaded');
+            }
+
+            const sorted = [...this.gameweeks].sort((a, b) => +a.week - +b.week);
+            const currentIdx = sorted.findIndex((gw) => +gw.week === +this.gameweek!.week);
+
+            if (currentIdx <= 0) {
+                return { assigned: 0, failed: 0 };
+            }
+
+            const previousGameweek = sorted[currentIdx - 1];
+            return await FootballApi.autoAssignPreviousTeams(this.gameweek.id, previousGameweek.id);
         }
     }
 });
