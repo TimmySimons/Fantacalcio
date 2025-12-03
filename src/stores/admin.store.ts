@@ -91,6 +91,10 @@ export const useAdminStore = defineStore('admin-store', {
             if (!skipReset) this.gameweek = undefined;
             this.gameweek = await GameweekApi.getGameweek(gameweekId);
         },
+        async deleteGameweek(gameweekId: string) {
+            await GameweekApi.deleteGameweek(gameweekId);
+            this.gameweek = undefined;
+        },
         async getManagers() {
             let managers = await FootballApi.getAllManagers();
             if (!useAuthStore().hasSuperPowers) {

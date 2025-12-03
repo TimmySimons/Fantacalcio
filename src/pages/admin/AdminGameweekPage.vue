@@ -6,11 +6,12 @@ import dayjs from 'dayjs';
 import { SorareApi } from '../../sorare/sorare.api.ts';
 import { FootballApi } from '../../supabase/football.api.ts';
 import GameweekPlayerCard from '../../components/admin/gameweeks/GameweekPlayerCard.vue';
-import { useRoute } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { Badge, useToast } from 'primevue';
 import { PlayerPosition } from '../../model/player.contract.ts';
 
 const route = useRoute();
+const router = useRouter();
 const gameweekId = computed<string>(() => route.params.id as string);
 
 const adminStore = useAdminStore();
@@ -163,6 +164,21 @@ const publishScores = () => {
 const onScored = () => {
     adminStore.getGameweekTeams(gameweekId.value);
 };
+
+const showConfirmDeleteDialog = ref(false);
+
+const onDelete = () => {
+    adminStore.deleteGameweek(gameweekId.value).then(() => {
+        showConfirmDeleteDialog.value = false;
+        router.push({ name: 'AdminGameweeks' });
+        toast.add({
+            severity: 'success',
+            summary: 'Gameweek Deleted',
+            detail: 'Gameweek has been deleted.',
+            life: 3000
+        });
+    });
+};
 </script>
 
 <template>
@@ -174,6 +190,7 @@ const onScored = () => {
                 </RouterLink>
                 Gameweek {{ gameweek?.week }}
             </div>
+            <i v-if="gameweek" class="pi-trash pi" @click="showConfirmDeleteDialog = true"></i>
         </div>
 
         <template v-if="!isLoading">
@@ -251,6 +268,31 @@ const onScored = () => {
             <i class="pi pi-spin pi-spinner" style="font-size: 24px"></i>
         </div>
     </div>
+
+    <Dialog
+        v-model:visible="showConfirmDeleteDialog"
+        :style="{ width: '350px' }"
+        header="Confirm Delete"
+        :modal="true"
+    >
+        <div class="flex items-center gap-4">
+            <span v-if="gameweek"
+                >Are you sure you want to delete gameweek <b>{{ gameweek.week }}</b
+                >?</span
+            >
+        </div>
+        <template #footer>
+            <Button
+                label="No"
+                icon="pi pi-times"
+                text
+                @click="showConfirmDeleteDialog = false"
+                severity="secondary"
+                variant="text"
+            />
+            <Button label="Yes" icon="pi pi-check" @click="onDelete" severity="danger" />
+        </template>
+    </Dialog>
 </template>
 
 <style scoped>
@@ -311,5 +353,13 @@ const onScored = () => {
 
 .info {
     margin-bottom: 12px;
+}
+
+.pi-trash {
+    border: 1px solid #b10000;
+    color: #b10000;
+    padding: 6px;
+    margin: 0;
+    border-radius: 4px;
 }
 </style>

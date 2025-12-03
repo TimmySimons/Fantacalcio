@@ -24,6 +24,15 @@ export class GameweekApi {
         return data;
     }
 
+    public static async deleteGameweek(id: string): Promise<void> {
+        const { error } = await supabase
+            .from('Gameweeks')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+    }
+
     public static async updateGameweekScoredDate(gameweekId: string) {
         const { error } = await supabase
             .from('Gameweeks')
