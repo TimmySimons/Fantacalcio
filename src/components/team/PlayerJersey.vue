@@ -32,6 +32,10 @@ const onClickPlayer = (player: PlayerContract) => {
 const isDisabled = computed(() => {
     return FootballUtil.isSelectedBenchPlayerDisabled(props.includedPlayers, props.player);
 });
+
+const awayTeam = computed(() => {
+    return props.player.PlayersAwayTeams?.[0]?.away_team;
+});
 </script>
 
 <template>
@@ -49,6 +53,7 @@ const isDisabled = computed(() => {
         <img v-if="player?.picture_url" :src="player.picture_url" class="player-img" />
         <component v-else :is="JerseyIcon" class="svg" />
         <span class="name">{{ player.last_name || player.first_name }}</span>
+        <span v-if="awayTeam" class="name away-team">{{ awayTeam }}</span>
         <div v-if="showPoints" class="points-wrapper">
             <div class="points gw">
                 <span v-if="!!gameweek?.scores_published_date && !!player.score"
@@ -56,7 +61,6 @@ const isDisabled = computed(() => {
                 >
                 <span v-else>-</span>
             </div>
-            <!--            <div class="points total">0</div>-->
         </div>
     </div>
 </template>
@@ -117,7 +121,7 @@ const isDisabled = computed(() => {
         line-height: 1.2em;
         word-break: break-word;
         margin-top: 1px;
-        background: #00000073;
+        background: #00000083;
         min-width: 42px;
         color: white;
         padding: 1px 4px;
@@ -125,6 +129,14 @@ const isDisabled = computed(() => {
         overflow: hidden;
         text-overflow: ellipsis;
         max-width: 60px;
+
+        &.away-team {
+            font-size: 6px;
+            background: rgb(117 157 113);
+            color: white;
+            padding: 1px 2px;
+            font-weight: 600;
+        }
     }
 
     &.selected {

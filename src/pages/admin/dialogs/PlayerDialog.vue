@@ -8,6 +8,8 @@ import dayjs from 'dayjs';
 import { SorareApi } from '../../../sorare/sorare.api.ts';
 import { useFootballScoreStore } from '../../../stores/football-scores.store.ts';
 import AverageScore from '../../../components/admin/players/AverageScore.vue';
+import { useFootballStore } from '../../../stores/football.store.ts';
+import { storeToRefs } from 'pinia';
 
 const props = defineProps<{
     player: PlayerContract | undefined;
@@ -25,37 +27,45 @@ const showDialog = defineModel<boolean>({ required: false, default: false });
 const sorareSlug = ref<string | undefined>();
 
 const footballScoreStore = useFootballScoreStore();
+const footballStore = useFootballStore();
+const { playerDetailed } = storeToRefs(footballStore);
 
 watch(
-    () => props.player?.sorare_slug,
-    async (slug) => {
-        sorareSlug.value = slug;
+    showDialog,
+    async (visible) => {
+        sorareSlug.value = props.player?.sorare_slug;
 
-        if (slug && props.player) {
+        if (visible && props.player?.sorare_slug) {
+            await footballStore.getPlayer(props.player.id, true);
+
+            if (!playerDetailed.value) return;
+
             if (
-                !props.player.PlayerSorareAverages ||
-                dayjs().diff(props.player.PlayerSorareAverages.updated_at, 'hour') >= 4
+                !playerDetailed.value.PlayerSorareAverages ||
+                dayjs().diff(playerDetailed.value.PlayerSorareAverages!.updated_at, 'hour') >= 4
             ) {
-                await SorareApi.getPlayersAverageScores([slug]).then((scores) => {
-                    const playerScores = scores[0];
-                    if (playerScores) {
-                        if (!props.player!.PlayerSorareAverages) {
-                            console.log('createScores', playerScores);
-                            footballScoreStore
-                                .createPlayerAverageScores(props.player!.id, playerScores)
-                                .then(() => {
-                                    emit('scores-fetched');
-                                });
-                        } else {
-                            console.log('updateScores', playerScores);
-                            footballScoreStore
-                                .updatePlayerAverageScores(props.player!.id, playerScores)
-                                .then(() => {
-                                    emit('scores-fetched');
-                                });
+                await SorareApi.getPlayersAverageScores([props.player.sorare_slug]).then(
+                    (scores) => {
+                        const playerScores = scores[0];
+                        if (playerScores) {
+                            if (!playerDetailed.value!.PlayerSorareAverages) {
+                                console.log('createScores', playerScores);
+                                footballScoreStore
+                                    .createPlayerAverageScores(props.player!.id, playerScores)
+                                    .then(() => {
+                                        footballStore.getPlayer(props.player!.id);
+                                    });
+                            } else {
+                                console.log('updateScores', playerScores);
+                                footballScoreStore
+                                    .updatePlayerAverageScores(props.player!.id, playerScores)
+                                    .then(() => {
+                                        footballStore.getPlayer(props.player!.id);
+                                    });
+                            }
                         }
                     }
-                });
+                );
             }
         }
     },
@@ -120,34 +130,42 @@ const onSave = () => {
                     <div class="flex scores">
                         <AverageScore
                             :gw-count="5"
-                            :average="player?.PlayerSorareAverages?.average_last_five"
+                            :average="playerDetailed?.PlayerSorareAverages?.average_last_five"
                             :average-decisive="
-                                player?.PlayerSorareAverages?.average_last_five_decisive
+                                playerDetailed?.PlayerSorareAverages?.average_last_five_decisive
                             "
                             :average-all-round="
-                                player?.PlayerSorareAverages?.average_last_five_all_round
+                                playerDetailed?.PlayerSorareAverages?.average_last_five_all_round
                             "
-                            :appearances="player?.PlayerSorareAverages?.last_five_appearances"
+                            :appearances="
+                                playerDetailed?.PlayerSorareAverages?.last_five_appearances
+                            "
                         />
                         <AverageScore
                             :gw-count="15"
-                            :average="player?.PlayerSorareAverages?.average_last_fifteen"
+                            :average="playerDetailed?.PlayerSorareAverages?.average_last_fifteen"
                             :average-decisive="
-                                player?.PlayerSorareAverages?.average_last_fifteen_decisive
+                                playerDetailed?.PlayerSorareAverages?.average_last_fifteen_decisive
                             "
                             :average-all-round="
-                                player?.PlayerSorareAverages?.average_last_fifteen_all_round
+                                playerDetailed?.PlayerSorareAverages?.average_last_fifteen_all_round
                             "
-                            :appearances="player?.PlayerSorareAverages?.last_fifteen_appearances"
+                            :appearances="
+                                playerDetailed?.PlayerSorareAverages?.last_fifteen_appearances
+                            "
                         />
                         <AverageScore
                             :gw-count="40"
-                            :average="player?.PlayerSorareAverages?.average_forty"
-                            :average-decisive="player?.PlayerSorareAverages?.average_forty_decisive"
-                            :average-all-round="
-                                player?.PlayerSorareAverages?.average_forty_all_round
+                            :average="playerDetailed?.PlayerSorareAverages?.average_forty"
+                            :average-decisive="
+                                playerDetailed?.PlayerSorareAverages?.average_forty_decisive
                             "
-                            :appearances="player?.PlayerSorareAverages?.last_forty_appearances"
+                            :average-all-round="
+                                playerDetailed?.PlayerSorareAverages?.average_forty_all_round
+                            "
+                            :appearances="
+                                playerDetailed?.PlayerSorareAverages?.last_forty_appearances
+                            "
                         />
                     </div>
 

@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import type { PlayerContract } from '../../../model/player.contract.ts';
-import SorareIcon from '../../../assets/icons/sorare.svg';
 
 defineProps<{
     player: PlayerContract;
@@ -15,11 +14,11 @@ defineProps<{
                     <div class="name">{{ player.first_name }} {{ player.last_name }}</div>
                     <div class="sub">{{ player.club_name_short }}</div>
                 </div>
-                <component
-                    v-if="player.sorare_slug"
-                    :is="SorareIcon"
-                    class="svg sorare"
-                /></div></template
+                <div
+                    v-if="player.club_picture_url"
+                    class="indicator"
+                    :style="{ backgroundImage: `url(${player.club_picture_url})` }"
+                ></div></div></template
     ></Card>
 </template>
 
@@ -29,6 +28,14 @@ defineProps<{
     justify-content: space-between;
     align-items: center;
     width: 100%;
+
+    .indicator {
+        width: 35px;
+        height: 35px;
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: contain;
+    }
 }
 
 .player {

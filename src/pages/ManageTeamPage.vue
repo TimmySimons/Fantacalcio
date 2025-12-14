@@ -33,15 +33,19 @@ if (appUser.value) {
 }
 footballScoreStore.getAllUsersGameweeksTeamPlayers();
 
-footballStore.getAllGameweeks().then(() => {
+footballStore.getAllGameweeks().then(async () => {
     if (currentGameweek.value) {
-        footballStore.getGameweek(currentGameweek.value.id);
+        await footballStore.getGameweek(currentGameweek.value.id);
+        footballStore.getUserPlayers(currentGameweek.value.id);
     }
 });
-footballStore.getUserPlayers();
 
-watch(gameweek, () => {
+const selectedPlayer = ref<PlayerContract | undefined>();
+
+const isLoading = ref(false);
+watch(gameweek, async () => {
     if (gameweek.value) {
+        isLoading.value = true;
         gameweekTeam.value = undefined;
         selectedPlayer.value = undefined;
         if (appUser.value) {
@@ -59,12 +63,27 @@ watch(gameweek, () => {
                     appUser.value!.id
                 );
             }
-        }
-    }
-});
 
-const isLoading = computed(() => {
-    return !(gameweeks.value && gameweek.value && gameweekTeam.value && userPlayers.value);
+            await footballStore.getUserPlayers(gameweek.value.id);
+            if (userPlayers.value && gameweek.value && !isLockedGameweek.value) {
+                const playersWithoutAwayTeam = userPlayers.value.filter(
+                    (p) => !p.PlayersAwayTeams || p.PlayersAwayTeams.length === 0
+                );
+                console.log('playersWithoutAwayTeam', playersWithoutAwayTeam);
+                if (playersWithoutAwayTeam.length > 0) {
+                    await footballStore.getPlayersAwayTeams(
+                        gameweek.value.id,
+                        playersWithoutAwayTeam.map((p) => p.sorare_slug),
+                        gameweek.value.sorare_slug
+                    );
+                    await footballStore.getUserPlayers(gameweek.value.id);
+                    await footballStore.getGameweekTeam(gameweek.value!.id, appUser.value!.id);
+                }
+            }
+        }
+
+        isLoading.value = false;
+    }
 });
 
 const adminUnlocked = ref(false);
@@ -74,8 +93,6 @@ const isLockedGameweek = computed(() => {
     if (adminUnlocked.value) return false;
     return FootballUtil.isLockedGameweek(gameweek.value);
 });
-
-const selectedPlayer = ref<PlayerContract | undefined>();
 
 const benchSitters = computed(() =>
     (userPlayers.value ?? [])
@@ -119,13 +136,10 @@ const onAddToTeam = async () => {
         !allIncludedPlayersOnField.value.map((p) => p.id).includes(selectedPlayer.value.id)
     ) {
         if (gameweek.value && gameweekTeam.value) {
-            await footballStore
-                .addTeamPlayers(gameweekTeam.value.id, [selectedPlayer.value.id])
-                .then(() => {
-                    if (appUser.value) {
-                        footballStore.getGameweekTeam(gameweek.value!.id, appUser.value.id, true);
-                    }
-                });
+            await footballStore.addTeamPlayers(gameweekTeam.value.id, [selectedPlayer.value.id]);
+            if (appUser.value) {
+                footballStore.getGameweekTeam(gameweek.value!.id, appUser.value.id, true);
+            }
         }
     }
 

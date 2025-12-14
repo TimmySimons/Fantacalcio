@@ -1,5 +1,6 @@
 import { supabase } from './supabase.ts';
 import type {
+    createGameweekContract,
     GameweekTeamPlayerContract,
     UserGameweeksTeamPlayersContract
 } from '../model/gameweek.contract.ts';
@@ -45,11 +46,21 @@ export class FootballApi {
         }
     }
 
-    public static async getUserPlayers(appUserId: string): Promise<PlayerContract[]> {
-        const { data, error } = await supabase
-            .from('UserPlayers')
-            .select('*, player:Players(*, PlayerSorareAverages(*))')
-            .eq('user_id', appUserId);
+    public static async getUserPlayers(
+        appUserId: string,
+        gameweekId?: string
+    ): Promise<PlayerContract[]> {
+        const selectQuery = gameweekId
+            ? '*, player:Players(*, PlayerSorareAverages(*), PlayersAwayTeams(*))'
+            : '*, player:Players(*, PlayerSorareAverages(*))';
+
+        let query = supabase.from('UserPlayers').select(selectQuery).eq('user_id', appUserId);
+
+        if (gameweekId) {
+            query = query.eq('player.PlayersAwayTeams.gameweek_id', gameweekId);
+        }
+
+        const { data, error } = await query;
 
         if (error) throw error;
         if (!data) return [];
@@ -74,19 +85,32 @@ export class FootballApi {
     ): Promise<TeamContract | undefined> {
         const { data, error } = await supabase
             .from('Teams')
-            .select('*, team_players:TeamPlayers(*, player:Players(*, PlayerSorareAverages(*)))')
+            .select(
+                `*,
+                team_players:TeamPlayers(
+                    *,
+                    player:Players(
+                        *,
+                        PlayerSorareAverages(*),
+                        PlayersAwayTeams(*)
+                    )
+                )`
+            )
             .eq('gameweek_id', gwId)
             .eq('user_id', appUserId)
+            .eq('team_players.player.PlayersAwayTeams.gameweek_id', gwId)
             .maybeSingle();
 
         if (error) throw error;
 
         if (!data) return;
 
-        const teamPlayers = data?.team_players.map((up: any) => ({
-            ...up.player,
-            score: up.score
-        }));
+        const teamPlayers = data?.team_players.map((up: any) => {
+            return {
+                ...up.player,
+                score: up.score
+            };
+        });
         return { ...data, team_players: teamPlayers };
     }
 
@@ -434,5 +458,35 @@ export class FootballApi {
         }
 
         return { assigned, failed };
+    }
+
+    public static async updatePlayersAwayTeam(
+        gameweekId: string,
+        updates: { sorare_slug: string; away_team: string }[]
+    ): Promise<void> {
+        console.log('Updating players away_team...', updates);
+
+        const { error } = await supabase.rpc('bulk_update_players_away_team', {
+            p_gameweek_id: gameweekId,
+            updates: updates
+        });
+
+        if (error) {
+            console.error(error);
+            throw new Error(`Failed to update away_team: ${error.message}`);
+        } else {
+            console.log('Away team status updated!');
+        }
+    }
+
+    public static async createGameweeks(gameweeks: createGameweekContract[]): Promise<void> {
+        const { error } = await supabase.from('Gameweeks').upsert(gameweeks, {
+            onConflict: 'sorare_slug',
+            ignoreDuplicates: true
+        });
+
+        if (error) {
+            throw new Error(`Failed to create gameweeks: ${error.message}`);
+        }
     }
 }

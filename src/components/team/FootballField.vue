@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import PlayerRow from './PlayerRow.vue';
-import { computed, ref } from 'vue';
+import { computed, ref, watch } from 'vue';
 import { type PlayerContract, PlayerPosition } from '../../model/player.contract.ts';
 import PlayerInfo from './PlayerInfo.vue';
 import { FootballUtil } from '../../FootballUtil.ts';
 import PlayerDialog from '../../pages/admin/dialogs/PlayerDialog.vue';
 import { useFootballStore } from '../../stores/football.store.ts';
-import { storeToRefs } from 'pinia';
 
 const props = defineProps<{
     includedPlayers: PlayerContract[];
@@ -43,7 +42,6 @@ const showBenchBtn = computed(() => {
 });
 
 const footballStore = useFootballStore();
-const { playerDetailed } = storeToRefs(footballStore);
 
 const onClickPlayer = (player: PlayerContract | undefined) => {
     selectedPlayer.value = player;
@@ -55,6 +53,12 @@ const onClickPlayer = (player: PlayerContract | undefined) => {
 };
 
 const showPlayerDialog = ref(false);
+
+watch(showPlayerDialog, (visible) => {
+    if (!visible) {
+        selectedPlayer.value = undefined;
+    }
+});
 </script>
 
 <template>
@@ -64,7 +68,7 @@ const showPlayerDialog = ref(false);
             <div class="loading" v-if="isLoading">
                 <i class="pi pi-spin pi-spinner" style="font-size: 24px"></i>
             </div>
-            <div class="players-layer">
+            <div class="players-layer" v-else>
                 <PlayerRow
                     :players="includedKeepers"
                     group="keepers"
@@ -110,15 +114,9 @@ const showPlayerDialog = ref(false);
             "
             :action="showBenchBtn ? 'remove' : 'add'"
             @move="(action) => $emit('move', action)"
-            @scores-fetched="footballStore.getPlayer(selectedPlayer!.id)"
         />
 
-        <PlayerDialog
-            v-model="showPlayerDialog"
-            :editable="false"
-            :player="playerDetailed"
-            @scores-fetched="footballStore.getPlayer(selectedPlayer!.id)"
-        />
+        <PlayerDialog v-model="showPlayerDialog" :editable="false" :player="selectedPlayer" />
     </div>
 </template>
 

@@ -15,7 +15,6 @@ export interface BasePlayerContract {
 }
 
 export interface PlayerContract extends BasePlayerContract {
-    next_opponent_club: string | undefined;
     // Sorare data
     sorare_last_updated: Date | undefined;
     picture_url: string | undefined;
@@ -27,6 +26,7 @@ export interface PlayerContract extends BasePlayerContract {
     shirt_number: string | undefined;
     club_picture_url: string | undefined;
     PlayerSorareAverages: PlayerAverageScoresContract | undefined;
+    PlayersAwayTeams: { away_team: string }[] | undefined;
 }
 
 export interface PlayerWithScoreContract extends PlayerContract {

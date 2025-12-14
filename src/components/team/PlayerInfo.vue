@@ -13,22 +13,14 @@ defineProps<{
 
 defineEmits<{
     (e: 'move', action: 'add' | 'remove'): void;
-    (e: 'scores-fetched'): void;
 }>();
 
 const showPlayerDialog = ref(false);
-
-// TODO Scores op info ding
 </script>
 
 <template>
     <div class="player-info" v-if="selectedPlayer">
-        <PlayerDialog
-            v-model="showPlayerDialog"
-            :editable="false"
-            :player="selectedPlayer"
-            @scores-fetched="$emit('scores-fetched')"
-        />
+        <PlayerDialog v-model="showPlayerDialog" :editable="false" :player="selectedPlayer" />
 
         <div class="player-img-wrapper" @click="showPlayerDialog = true">
             <img
@@ -42,12 +34,12 @@ const showPlayerDialog = ref(false);
         <div class="info">
             <div>{{ selectedPlayer.first_name + ' ' + selectedPlayer.last_name }}</div>
             <div>{{ selectedPlayer.position }}</div>
-            <div>{{ selectedPlayer.club_name_short }}</div>
+            <div class="home">{{ selectedPlayer.club_name_short }}</div>
+            <div v-if="selectedPlayer.PlayersAwayTeams" class="away">
+                <i class="pi pi-arrows-h" />
+                {{ selectedPlayer.PlayersAwayTeams[0].away_team }}
+            </div>
         </div>
-        <!--        <div class="scores">-->
-        <!--            <div>0</div>-->
-        <!--            <div class="new">+0</div>-->
-        <!--        </div>-->
         <div
             v-if="canMove"
             class="move"
@@ -110,12 +102,23 @@ const showPlayerDialog = ref(false);
 
     .info {
         flex: 1;
+        font-size: 9px;
+
+        .away {
+            color: #093400;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            i {
+                font-size: 11px;
+            }
+        }
 
         > div {
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            max-width: 140px;
+            max-width: 150px;
         }
     }
 

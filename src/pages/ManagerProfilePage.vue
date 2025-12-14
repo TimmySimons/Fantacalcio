@@ -45,10 +45,22 @@ const selectedPlayer = ref<PlayerContract | undefined>();
 
 const showDrawer = ref(false);
 
-watch(gameweek, () => {
+watch(gameweek, async () => {
     if (gameweek.value) {
-        footballStore.getGameweekTeam(gameweek.value.id, managerId.value);
-        footballScoreStore.getUserGameweeksTeamPlayers(managerId.value);
+        await footballStore.getGameweekTeam(gameweek.value.id, managerId.value);
+        await footballScoreStore.getUserGameweeksTeamPlayers(managerId.value);
+
+        const playersWithoutAwayTeam = fieldPlayers.value.filter(
+            (p) => !p.PlayersAwayTeams || p.PlayersAwayTeams.length === 0
+        );
+        if (playersWithoutAwayTeam.length > 0) {
+            await footballStore.getPlayersAwayTeams(
+                gameweek.value.id,
+                playersWithoutAwayTeam.map((p) => p.sorare_slug),
+                gameweek.value.sorare_slug
+            );
+            footballStore.getGameweekTeam(gameweek.value.id, managerId.value);
+        }
     }
 });
 

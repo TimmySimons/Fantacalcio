@@ -13,9 +13,9 @@ adminStore.getPlayers();
 
 const showDialog = ref(false);
 
-const onClickPlayer = (playerId: string) => {
+const onClickPlayer = async (playerId: string) => {
     player.value = undefined;
-    adminStore.getPlayer(playerId);
+    await adminStore.getPlayer(playerId);
     showDialog.value = true;
 };
 
@@ -59,50 +59,59 @@ const onNewPlayer = () => {
                 :editable="true"
                 :player="player"
                 @save="onSave"
-                @scores-fetched="adminStore.getPlayer(player!.id)"
                 :is-loading-sorare="isLoadingSorare"
             />
 
             <div v-if="players" class="players">
-                <div class="section-header">
-                    Goalkeepers <span>({{ goalkeepers.length }})</span>
-                </div>
-                <PlayerCard
-                    v-for="player in goalkeepers"
-                    :key="player.id"
-                    :player="player"
-                    @click="onClickPlayer(player.id)"
-                />
+                <Fieldset :toggleable="true" :legend="`Goalkeepers (${goalkeepers.length})`">
+                    <div class="flex col gap-4">
+                        <PlayerCard
+                            v-for="player in goalkeepers"
+                            :key="player.id"
+                            :player="player"
+                            @click="onClickPlayer(player.id)"
+                        />
+                    </div>
+                </Fieldset>
 
-                <div class="section-header">
-                    Defenders <span>({{ defenders.length }})</span>
-                </div>
-                <PlayerCard
-                    v-for="player in defenders"
-                    :key="player.id"
-                    :player="player"
-                    @click="onClickPlayer(player.id)"
-                />
+                <Divider type="solid" />
 
-                <div class="section-header">
-                    Midfielders <span>({{ midfielders.length }})</span>
-                </div>
-                <PlayerCard
-                    v-for="player in midfielders"
-                    :key="player.id"
-                    :player="player"
-                    @click="onClickPlayer(player.id)"
-                />
+                <Fieldset :toggleable="true" :legend="`Defenders (${defenders.length})`">
+                    <div class="flex col gap-4">
+                        <PlayerCard
+                            v-for="player in defenders"
+                            :key="player.id"
+                            :player="player"
+                            @click="onClickPlayer(player.id)"
+                        />
+                    </div>
+                </Fieldset>
 
-                <div class="section-header">
-                    Forwards <span>({{ forwards.length }})</span>
-                </div>
-                <PlayerCard
-                    v-for="player in forwards"
-                    :key="player.id"
-                    :player="player"
-                    @click="onClickPlayer(player.id)"
-                />
+                <Divider type="solid" />
+
+                <Fieldset :toggleable="true" :legend="`Midfielders (${midfielders.length})`">
+                    <div class="flex col gap-4">
+                        <PlayerCard
+                            v-for="player in midfielders"
+                            :key="player.id"
+                            :player="player"
+                            @click="onClickPlayer(player.id)"
+                        />
+                    </div>
+                </Fieldset>
+
+                <Divider type="solid" />
+
+                <Fieldset :toggleable="true" :legend="`Forwards (${forwards.length})`">
+                    <div class="flex col gap-4">
+                        <PlayerCard
+                            v-for="player in forwards"
+                            :key="player.id"
+                            :player="player"
+                            @click="onClickPlayer(player.id)"
+                        />
+                    </div>
+                </Fieldset>
             </div>
 
             <div v-else>
