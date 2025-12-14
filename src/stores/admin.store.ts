@@ -170,11 +170,11 @@ export const useAdminStore = defineStore('admin-store', {
 
             const gameweeks = await SorareApi.getFutureGameweeks(latestGameweek?.start_date);
             const newGameweeks = gameweeks.filter(
-                (gw) => !this.gameweeks?.map((g) => g.sorare_slug).includes(gw.sorare_slug)
+                (gw: any) => !this.gameweeks?.map((g) => g.sorare_slug).includes(gw.sorare_slug)
             );
 
             await FootballApi.createGameweeks(
-                newGameweeks.map((gw) => ({
+                newGameweeks.map((gw: any) => ({
                     ...gw,
                     year: gw.start_date.getFullYear()
                 }))

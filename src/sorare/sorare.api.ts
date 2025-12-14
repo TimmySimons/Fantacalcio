@@ -62,13 +62,13 @@ export class SorareApi {
             .then((res) => res.json())
             .then((data) => {
                 const result = data.data.so5.allSo5Fixtures.edges
-                    .map((e) => ({
+                    .map((e: any) => ({
                         sorare_slug: e.node.slug,
                         start_date: new Date(e.node.startDate),
                         end_date: new Date(e.node.endDate),
                         week: e.node.seasonGameWeek
                     }))
-                    .filter((gw) => gw.start_date > (after ?? new Date()));
+                    .filter((gw: any) => gw.start_date > (after ?? new Date()));
                 console.log('Sorare:', result);
                 return result;
             });
@@ -84,11 +84,11 @@ export class SorareApi {
         )
             .then((res) => res.json())
             .then((data) => {
-                const result = data.data.football.players.map((p) => {
+                const result = data.data.football.players.map((p: any) => {
                     return {
                         sorare_slug: p.slug,
                         away_team: p.anyGamesForFixture
-                            .map((e) => ({
+                            .map((e: any) => ({
                                 name:
                                     e.homeTeam.name === p.activeClub.name
                                         ? e.awayTeam.name

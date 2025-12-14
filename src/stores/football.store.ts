@@ -113,7 +113,7 @@ export const useFootballStore = defineStore('football-store', {
                 await FootballApi.updatePlayersAwayTeam(
                     gameweekId,
                     awayTeams
-                        .filter((t) => t.away_team)
+                        .filter((t: any) => t.away_team)
                         .map((t: any) => ({ ...t, away_team: t.away_team.name }))
                 );
             }
