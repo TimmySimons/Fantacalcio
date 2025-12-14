@@ -1,0 +1,20 @@
+create table public."PlayerSorareAverages" (
+                                               id uuid not null default gen_random_uuid (),
+           updated_at timestamp with time zone not null default now(),
+           last_five_appearances bigint null,
+           average_last_five double precision null,
+           average_last_five_decisive double precision null,
+           average_last_five_all_round double precision null,
+           last_fifteen_appearances bigint null,
+           average_last_fifteen double precision null,
+           average_last_fifteen_decisive double precision null,
+           average_last_fifteen_all_round double precision null,
+           last_forty_appearances bigint null,
+           average_forty double precision null,
+           average_forty_decisive double precision null,
+           average_forty_all_round double precision null,
+           player_id uuid not null default gen_random_uuid (),
+           constraint PlayerSorareAverages_pkey primary key (id),
+           constraint PlayerSorareAverages_player_id_key unique (player_id),
+           constraint PlayerSorareAverages_player_id_fkey foreign KEY (player_id) references "Players" (id) on update CASCADE on delete CASCADE
+) TABLESPACE pg_default;

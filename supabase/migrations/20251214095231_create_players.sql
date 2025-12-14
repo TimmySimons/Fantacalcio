@@ -1,0 +1,22 @@
+create table public."Players" (
+      id uuid not null default gen_random_uuid (),
+      created_at timestamp with time zone not null default now(),
+      position public."Position" not null,
+      club text null,
+      first_name text not null,
+      last_name text not null,
+      next_opponent_club text null,
+      sorare_slug text null,
+      picture_url text null,
+      club_name_short text null,
+      club_picture_url text null,
+      shirt_number text null,
+      country text null,
+      country_flag_picture_url text null,
+      height numeric null,
+      weight numeric null,
+      birth_date date null,
+      sorare_last_updated timestamp with time zone null,
+      constraint Players_pkey primary key (id),
+      constraint Players_sorare_slug_key unique (sorare_slug)
+) TABLESPACE pg_default;
