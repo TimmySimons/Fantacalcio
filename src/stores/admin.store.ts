@@ -10,6 +10,7 @@ import {
 import type { AppUserContract } from '../model/app-user.contract.ts';
 import { GameweekApi } from '../supabase/football/gameweek.api.ts';
 import { useAuthStore } from './auth.store.ts';
+import { SorareApi } from '../sorare/sorare.api.ts';
 
 export const useAdminStore = defineStore('admin-store', {
     state: (): {
@@ -83,8 +84,8 @@ export const useAdminStore = defineStore('admin-store', {
         }
     },
     actions: {
-        async getGameweeks() {
-            this.gameweeks = undefined;
+        async getGameweeks(soft?: boolean) {
+            if (!soft) this.gameweeks = undefined;
             this.gameweeks = await GameweekApi.getAllGameweeks();
         },
         async getGameweek(gameweekId: string, skipReset?: boolean) {
@@ -113,8 +114,8 @@ export const useAdminStore = defineStore('admin-store', {
         async getPlayers() {
             this.players = await FootballApi.getPlayers();
         },
-        async getPlayer(id: string) {
-            this.player = undefined;
+        async getPlayer(id: string, soft?: boolean) {
+            if (!soft) this.player = undefined;
             this.player = await FootballApi.getPlayer(id);
         },
         async updatePlayer(playerId: string, sorareSlug: string, sorareData: any) {
@@ -160,6 +161,26 @@ export const useAdminStore = defineStore('admin-store', {
 
             const previousGameweek = sorted[currentIdx - 1];
             return await FootballApi.autoAssignPreviousTeams(this.gameweek.id, previousGameweek.id);
+        },
+        async loadSorareGameweeks(): Promise<number> {
+            if (!this.gameweeks) {
+                throw new Error('Gameweeks data not loaded');
+            }
+            const latestGameweek = [...(this.gameweeks ?? [])].sort((a, b) => +b.week - +a.week)[0];
+
+            const gameweeks = await SorareApi.getFutureGameweeks(latestGameweek?.start_date);
+            const newGameweeks = gameweeks.filter(
+                (gw) => !this.gameweeks?.map((g) => g.sorare_slug).includes(gw.sorare_slug)
+            );
+
+            await FootballApi.createGameweeks(
+                newGameweeks.map((gw) => ({
+                    ...gw,
+                    year: gw.start_date.getFullYear()
+                }))
+            );
+
+            return newGameweeks.length;
         }
     }
 });

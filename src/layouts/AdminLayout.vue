@@ -8,7 +8,7 @@ import AdminFooterMenu from '../components/AdminFooterMenu.vue';
         <AppHeader>
             <template #end>
                 <RouterLink :to="{ name: 'Leaderboard' }" class="link">
-                    <i class="pi pi-arrow-circle-left" style="font-size: 1.6rem"></i>
+                    <i class="pi pi-times-circle" style="font-size: 1.6rem"></i>
                 </RouterLink>
             </template>
         </AppHeader>

@@ -7,8 +7,10 @@ import Menubar from 'primevue/menubar';
         <template #start>
             <div class="start">
                 <img alt="logo" src="/pwa-192x192.png" height="40" class="mr-2" />
-                <span class="text-xl name">Fantacalcio</span>
-                <span class="admin">Admin</span>
+                <div class="text">
+                    <div class="name">Fantacalcio</div>
+                    <div class="admin">Admin</div>
+                </div>
             </div>
         </template>
 
@@ -35,16 +37,17 @@ import Menubar from 'primevue/menubar';
 .start {
     display: flex;
     align-items: center;
-    gap: 12px;
-}
+    gap: 8px;
 
-.name {
-    color: darkred;
-    font-weight: bold;
-}
+    .text {
+        font-size: 12px;
+        font-weight: bold;
+        line-height: 16px;
 
-.admin {
-    font-weight: bold;
+        .name {
+            color: darkred;
+        }
+    }
 }
 
 .pi {

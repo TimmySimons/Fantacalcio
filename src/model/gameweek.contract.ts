@@ -13,6 +13,14 @@ export interface GameweekContract {
     team?: TeamContract;
 }
 
+export interface createGameweekContract {
+    sorare_slug: string;
+    start_date: Date;
+    end_date: Date;
+    week: number;
+    year: number;
+}
+
 export interface GameweekTeamPlayerContract {
     gameweek_id: string;
     Gameweeks: { scores_published_date: Date | null };

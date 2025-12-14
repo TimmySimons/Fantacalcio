@@ -9,6 +9,7 @@ import GameweekPlayerCard from '../../components/admin/gameweeks/GameweekPlayerC
 import { useRoute, useRouter } from 'vue-router';
 import { Badge, useToast } from 'primevue';
 import { PlayerPosition } from '../../model/player.contract.ts';
+import { Util } from '../../util.ts';
 
 const route = useRoute();
 const router = useRouter();
@@ -57,14 +58,6 @@ const gameweekStarted = computed(() => {
 
 const allGameweekPlayers = computed(() => gameweekTeams.value?.flatMap((p) => p.players) ?? []);
 
-function chunkArray<T>(arr: T[], size: number): T[][] {
-    const chunks: T[][] = [];
-    for (let i = 0; i < arr.length; i += size) {
-        chunks.push(arr.slice(i, i + size));
-    }
-    return chunks;
-}
-
 const sorareLoading = ref(false);
 const getGameweekScores = async () => {
     if (gameweek.value && gameweek.value.sorare_slug) {
@@ -78,7 +71,7 @@ const getGameweekScores = async () => {
                 );
 
                 const slugs = players.map((p) => p.player.sorare_slug);
-                const chunks = chunkArray(slugs, 15);
+                const chunks = Util.chunkArray(slugs, 15);
 
                 return chunks.map((group) =>
                     SorareApi.getPlayersGameweekScores(gameweek.value!.sorare_slug, group, position)
