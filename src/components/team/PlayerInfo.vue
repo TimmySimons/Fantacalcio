@@ -37,7 +37,7 @@ const showPlayerDialog = ref(false);
             <div class="home">{{ selectedPlayer.club_name_short }}</div>
             <div v-if="selectedPlayer.PlayersAwayTeams" class="away">
                 <i class="pi pi-arrows-h" />
-                {{ selectedPlayer.PlayersAwayTeams[0].away_team }}
+                {{ selectedPlayer.PlayersAwayTeams[0]?.away_team }}
             </div>
         </div>
         <div
