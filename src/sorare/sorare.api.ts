@@ -56,6 +56,23 @@ export class SorareApi {
     }
 
     public static async getFutureGameweeks(after?: Date) {
+        // TODO: enable to use supabase edge function
+        // const { data, error } = await supabase.functions.invoke('gameweeks', {
+        //     body: {}
+        // });
+        // console.log('Supabase edge!', data, error);
+        //
+        // const result = data.data.so5.allSo5Fixtures.edges
+        //     .map((e: any) => ({
+        //         sorare_slug: e.node.slug,
+        //         start_date: new Date(e.node.startDate),
+        //         end_date: new Date(e.node.endDate),
+        //         week: e.node.seasonGameWeek
+        //     }))
+        //     .filter((gw: any) => gw.start_date > (after ?? new Date()));
+        // console.log('Sorare:', result);
+        // return result;
+
         const vercelPath = import.meta.env.VITE_VERCEL_URL;
 
         return await fetch(`${vercelPath}/api/gameweeks`)
