@@ -61,7 +61,7 @@ const showPlayerDialog = ref(false);
     width: 96%;
     display: flex;
     align-items: start;
-    padding: 6px 6px;
+    padding: 4px;
     box-sizing: border-box;
     font-size: 0.7em;
     gap: 8px;
@@ -73,8 +73,8 @@ const showPlayerDialog = ref(false);
     box-shadow: 0px 3px 6px 0px rgb(0 0 0 / 39%);
 
     .player-img-wrapper {
-        height: 52px;
-        width: 56px;
+        height: 56px;
+        width: 60px;
         background: rgba(0, 0, 0, 0.2);
         padding: 4px 4px 0 4px;
         box-sizing: border-box;
@@ -112,6 +112,11 @@ const showPlayerDialog = ref(false);
             i {
                 font-size: 11px;
             }
+            border: 1px solid rgba(15, 39, 0, 0.27);
+            padding: 0 6px;
+            border-radius: 2px;
+            width: fit-content;
+            margin-top: 2px;
         }
 
         > div {
@@ -125,7 +130,7 @@ const showPlayerDialog = ref(false);
     .scores,
     .move {
         height: 100%;
-        min-width: 50px;
+        min-width: 56px;
         border-radius: 6px;
         background: rgba(0, 0, 0, 0.2);
         align-items: center;

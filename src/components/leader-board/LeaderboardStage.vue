@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import LaurelIcon from '../../assets/icons/laurel.svg';
 import type { ManagerContract } from '../../model/manager.contract.ts';
+import { Util } from '../../util.ts';
 
 defineProps<{
     topThree: (ManagerContract | undefined)[];
@@ -20,7 +21,7 @@ defineProps<{
 
             <div class="text">
                 <div class="score">
-                    {{ top?.totalScore }}
+                    {{ top?.totalScore ? Util.formatNumberWithDot(top.totalScore) : undefined }}
                 </div>
                 <div class="team">{{ top?.team_name }}</div>
             </div>

@@ -247,17 +247,14 @@ const loadPreviousTeam = () => {
 
         <div class="content-container" :class="{ 'points-inline': pointsView }">
             <div
-                class="flex justify-end toggle"
+                class="flex justify-end toggle buttons"
                 :class="{ current: FootballUtil.isCurrentGameweek(gameweek) }"
             >
-                <template v-if="!isLockedGameweek">
-                    <!--                    <span>Points</span>-->
-                    <!--                    <ToggleSwitch v-model="pointsView" />-->
-                </template>
+                <template v-if="!isLockedGameweek"> </template>
                 <template v-else-if="FootballUtil.isCurrentGameweek(gameweek)" class="current">
                     <span></span>
                     <span class="now">Now playing!</span>
-                    <span v-if="nextGameweek" class="next" @click="onManageNext"
+                    <span v-if="nextGameweek" class="next btn" @click="onManageNext"
                         >Manage next <i class="pi pi-chevron-right" style="font-size: 8px"></i
                     ></span>
                 </template>
@@ -392,18 +389,23 @@ const loadPreviousTeam = () => {
         height: 22px;
         border-radius: 6px;
         background: #fff;
-        border: 1px solid darkred;
         color: darkred;
+        font-weight: 500;
         justify-content: center;
         display: flex;
         align-items: center;
         gap: 6px;
         cursor: pointer;
+        box-shadow: 0px 3px 6px 0px rgb(0 0 0 / 8%);
 
         &.disabled {
             opacity: 0.5;
             filter: grayscale(1);
             cursor: not-allowed;
+        }
+
+        &.next {
+            font-size: 0.9em;
         }
     }
 }
@@ -425,10 +427,10 @@ const loadPreviousTeam = () => {
 
     .now {
         color: darkred;
-        padding: 2px 8px;
-        border-radius: 24px;
-        border: 1px solid darkred;
+        padding: 4px 8px;
         text-align: center;
+        box-shadow: inset 0px 0px 12px rgba(161, 2, 2, 0.15);
+        border-radius: 20px;
     }
 
     .next {

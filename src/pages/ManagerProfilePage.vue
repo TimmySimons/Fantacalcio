@@ -180,5 +180,9 @@ const nonFutureGameweeks = computed(() => {
 }
 .now {
     color: darkred;
+    padding: 2px 20px;
+    text-align: center;
+    box-shadow: inset 0px 0px 12px rgba(161, 2, 2, 0.15);
+    border-radius: 20px;
 }
 </style>

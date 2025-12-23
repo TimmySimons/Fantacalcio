@@ -6,6 +6,7 @@ import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import type { ManagerContract } from '../../model/manager.contract.ts';
 import { computed } from 'vue';
+import { Util } from '../../util.ts';
 
 const props = defineProps<{
     place: number;
@@ -20,10 +21,11 @@ const onClick = () => {
     router.push({ name: 'ManagerProfile', params: { id: props.manager.id } });
 };
 
-const currGwScore = computed<number | undefined>(() => {
+const currGwScore = computed<string>(() => {
     const score = usersGameweekScores.value?.find((s) => s.user_id === props.manager.id)
         ?.total_score;
-    return score ? Math.round(score) : 0;
+    const result = score ? Math.round(score) : 0;
+    return Util.formatNumberWithDot(result);
 });
 </script>
 
@@ -37,7 +39,7 @@ const currGwScore = computed<number | undefined>(() => {
             <div>{{ manager.name }}</div>
         </div>
         <div class="gw">+{{ currGwScore }}</div>
-        <div class="total">{{ totalUserScore(manager.id) }}</div>
+        <div class="total">{{ Util.formatNumberWithDot(totalUserScore(manager.id)) }}</div>
         <component :is="CaretIcon" class="svg caret" />
     </div>
 </template>
@@ -132,7 +134,7 @@ const currGwScore = computed<number | undefined>(() => {
     border-radius: 6px;
     width: 60px;
     text-align: center;
-    font-size: 0.9em;
+    font-size: 0.8em;
 }
 
 .caret {

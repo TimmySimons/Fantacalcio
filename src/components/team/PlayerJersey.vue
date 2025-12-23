@@ -120,22 +120,23 @@ const awayTeam = computed(() => {
         text-align: center;
         line-height: 1.2em;
         word-break: break-word;
-        margin-top: 1px;
-        background: #00000083;
-        min-width: 42px;
+        background: #000000a3;
         color: white;
         padding: 1px 4px;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
+        min-width: 60px;
         max-width: 60px;
+        border-radius: 2px 2px 0 0;
 
         &.away-team {
             font-size: 6px;
-            background: rgb(117 157 113);
-            color: white;
+            background: #ffffffc3;
+            color: black;
             padding: 1px 2px;
             font-weight: 600;
+            border-radius: 0 0 2px 2px;
         }
     }
 
@@ -146,6 +147,8 @@ const awayTeam = computed(() => {
     }
 
     &.disabled {
+        opacity: 0.7;
+
         .svg {
             fill: #ccc;
         }
@@ -236,6 +239,12 @@ const awayTeam = computed(() => {
 .substitutes {
     .position {
         display: flex;
+    }
+
+    .name {
+        &.away-team {
+            background: #eaeaea;
+        }
     }
 }
 </style>
