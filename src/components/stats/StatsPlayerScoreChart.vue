@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { computed, nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import { Chart, BarController, BarElement, LinearScale, CategoryScale, Tooltip } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { FootballUtil } from '../../FootballUtil.ts';
@@ -120,8 +120,8 @@ function buildChart() {
 }
 
 onMounted(buildChart);
-watch(() => props.data, buildChart, { deep: true });
-watch(() => props.selectedId, buildChart);
+watch(() => props.data, () => nextTick(buildChart), { deep: true });
+watch(() => props.selectedId, () => nextTick(buildChart));
 onUnmounted(() => chart?.destroy());
 </script>
 

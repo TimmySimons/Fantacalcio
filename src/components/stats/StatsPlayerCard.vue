@@ -71,7 +71,8 @@ const positionColor: Record<string, string> = {
     border-radius: 16px;
     padding: 18px;
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-    min-height: fit-content;
+    height: fit-content;
+    min-height: 224px;
 }
 
 .card-title {
@@ -177,5 +178,7 @@ const positionColor: Record<string, string> = {
     border-radius: 8px;
     font-size: 0.85em;
     flex-shrink: 0;
+    min-width: 50px;
+    text-align: center;
 }
 </style>

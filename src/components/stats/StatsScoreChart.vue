@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { nextTick, onMounted, onUnmounted, ref, watch } from 'vue';
 import {
     Chart,
     LineController,
@@ -83,7 +83,7 @@ function buildChart() {
 }
 
 onMounted(buildChart);
-watch(() => props.data, buildChart, { deep: true });
+watch(() => props.data, () => nextTick(buildChart), { deep: true });
 onUnmounted(() => chart?.destroy());
 </script>
 
