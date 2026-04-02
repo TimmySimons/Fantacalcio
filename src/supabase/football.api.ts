@@ -234,7 +234,7 @@ export class FootballApi {
                 `
                     gameweek_id,
                     user_id,
-                    TeamPlayers(id, score),
+                    TeamPlayers(id, player_id, score),
                     Gameweeks (scores_published_date)
                   `
             )
@@ -256,7 +256,7 @@ export class FootballApi {
             Teams (
               gameweek_id,
               user_id,
-              TeamPlayers (id, score),
+              TeamPlayers (id, player_id, score),
               Gameweeks (scores_published_date)
             )
           `
@@ -425,6 +425,47 @@ export class FootballApi {
 
         console.log('Incomplete team managers:', missing.length);
         return missing;
+    }
+
+    public static async getTopPlayersByUser(
+        userId: string
+    ): Promise<{ player: BasePlayerContract & { picture_url?: string }; totalScore: number }[]> {
+        const { data, error } = await supabase
+            .from('Teams')
+            .select(
+                `
+                Gameweeks(scores_published_date),
+                TeamPlayers(
+                    score,
+                    Players(id, first_name, last_name, position, picture_url, club_name_short)
+                )
+            `
+            )
+            .eq('user_id', userId);
+
+        if (error) throw error;
+        if (!data) return [];
+
+        const playerScores = new Map<
+            string,
+            { player: BasePlayerContract & { picture_url?: string }; totalScore: number }
+        >();
+
+        for (const team of data) {
+            if (!(team.Gameweeks as any)?.scores_published_date) continue;
+            for (const tp of team.TeamPlayers as any[]) {
+                if (!tp.Players || tp.score == null) continue;
+                const player = tp.Players;
+                const existing = playerScores.get(player.id);
+                if (existing) {
+                    existing.totalScore += tp.score;
+                } else {
+                    playerScores.set(player.id, { player, totalScore: tp.score });
+                }
+            }
+        }
+
+        return Array.from(playerScores.values()).sort((a, b) => b.totalScore - a.totalScore);
     }
 
     public static async autoAssignPreviousTeams(

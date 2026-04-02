@@ -80,6 +80,12 @@ const nonFutureGameweeks = computed(() => {
 
             <div>{{ manager?.team_name }}</div>
             <div class="manager">{{ manager?.name }}</div>
+            <RouterLink
+                :to="{ name: 'ManagerStats', params: { id: managerId } }"
+                class="stats-link"
+            >
+                View Stats
+            </RouterLink>
         </div>
 
         <div class="content">
@@ -164,6 +170,24 @@ const nonFutureGameweeks = computed(() => {
     top: 18px;
     left: 18px;
     color: white;
+}
+
+.stats-link {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.55em;
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 12px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.7);
+    padding: 2px 8px;
+
+    &:active {
+        opacity: 1;
+    }
 }
 
 .top-info {

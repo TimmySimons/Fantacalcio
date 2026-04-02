@@ -50,17 +50,14 @@ defineProps<{
 
 .rows {
     display: flex;
-    flex-direction: column;
     gap: 10px;
+    justify-content: space-between;
 }
 
 .row {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 12px;
-    border-radius: 10px;
-    background: #f7f7f7;
 }
 
 .accent {
@@ -103,8 +100,8 @@ defineProps<{
     font-weight: bold;
     font-size: 0.85em;
     color: #222;
-    background: #fff;
-    padding: 4px 10px;
+    background: #f0f0f0;
+    padding: 10px;
     border-radius: 8px;
     min-width: 60px;
     text-align: center;

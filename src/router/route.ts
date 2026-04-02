@@ -4,6 +4,7 @@ import LoginPage from '../pages/LoginPage.vue';
 import DefaultLayout from '../layouts/DefaultLayout.vue';
 import AdminLayout from '../layouts/AdminLayout.vue';
 import ManageTeamPage from '../pages/ManageTeamPage.vue';
+import StatsPage from '../pages/StatsPage.vue';
 import AdminPlayersPage from '../pages/admin/AdminPlayersPage.vue';
 import AdminGameweeksPage from '../pages/admin/AdminGameweeksPage.vue';
 import AdminGameweekPage from '../pages/admin/AdminGameweekPage.vue';
@@ -35,9 +36,19 @@ const routes = [
                 component: ManageTeamPage
             },
             {
+                path: 'stats',
+                name: 'Stats',
+                component: StatsPage
+            },
+            {
                 path: '/managers/:id',
                 name: 'ManagerProfile',
                 component: ManagerProfilePage
+            },
+            {
+                path: '/managers/:id/stats',
+                name: 'ManagerStats',
+                component: StatsPage
             }
         ]
     },

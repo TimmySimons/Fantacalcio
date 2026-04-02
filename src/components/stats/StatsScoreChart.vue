@@ -59,12 +59,19 @@ function buildChart() {
                     callbacks: {
                         label: (ctx) => ` ${ctx.parsed.y} pts`
                     }
+                },
+                datalabels: {
+                    display: false
                 }
             },
             scales: {
                 x: {
                     grid: { display: false },
-                    ticks: { font: { size: 11 } }
+                    ticks: {
+                        font: { size: 11 },
+                        maxRotation: 90,
+                        minRotation: 90
+                    }
                 },
                 y: {
                     grid: { color: 'rgba(0,0,0,0.06)' },
@@ -82,7 +89,7 @@ onUnmounted(() => chart?.destroy());
 
 <template>
     <div class="card">
-        <div class="card-title">Score per Gameweek</div>
+        <div class="card-title">Gameweek Scores</div>
         <div v-if="data.length === 0" class="empty">No scores yet</div>
         <div v-else class="chart-container">
             <canvas ref="canvas" />

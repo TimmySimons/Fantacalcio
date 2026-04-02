@@ -10,7 +10,8 @@ const { appUser } = storeToRefs(authStore);
 const items = computed(() => {
     const i = [
         { label: 'Leaderboard', route: { name: 'Leaderboard' }, icon: 'pi pi-fw pi-trophy' },
-        { label: 'My Team', route: { name: 'ManageTeam' }, icon: 'pi pi-fw pi-sitemap' }
+        { label: 'My Team', route: { name: 'ManageTeam' }, icon: 'pi pi-fw pi-sitemap' },
+        { label: 'Stats', route: { name: 'Stats' }, icon: 'pi pi-fw pi-chart-bar' }
     ];
 
     if (appUser.value?.roles.includes('ADMIN')) {
