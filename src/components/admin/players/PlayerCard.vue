@@ -10,31 +10,48 @@ defineProps<{
     <Card class="card player flex">
         <template #content>
             <div class="card-content">
+                <div class="avatar-wrapper">
+                    <div
+                        class="avatar"
+                        :style="
+                            player.picture_url
+                                ? { backgroundImage: `url(${player.picture_url})` }
+                                : {}
+                        "
+                    ></div>
+                </div>
                 <div>
-                    <div class="name">{{ player.first_name }} {{ player.last_name }}</div>
+                    <div class="name">
+                        <span class="first-name">{{ player.first_name }}</span>
+                        {{ player.last_name }}
+                    </div>
                     <div class="sub">{{ player.club_name_short }}</div>
                 </div>
-                <div
-                    v-if="player.club_picture_url"
-                    class="indicator"
-                    :style="{ backgroundImage: `url(${player.club_picture_url})` }"
-                ></div></div></template
-    ></Card>
+            </div>
+        </template>
+    </Card>
 </template>
 
 <style scoped>
 .card-content {
     display: flex;
-    justify-content: space-between;
     align-items: center;
+    gap: 12px;
     width: 100%;
 
-    .indicator {
-        width: 35px;
-        height: 35px;
+    .avatar-wrapper {
+        flex-shrink: 0;
+        padding: 6px 3px 0 3px;
+        background-color: #f4f4f4;
+        border-radius: 4px;
+    }
+
+    .avatar {
+        width: 34px;
+        height: 34px;
         background-repeat: no-repeat;
-        background-position: center;
-        background-size: contain;
+        background-position: center top;
+        background-size: cover;
     }
 }
 
@@ -45,6 +62,11 @@ defineProps<{
 
 .name {
     font-weight: bold;
+    color: darkred;
+
+    .first-name {
+        color: #000;
+    }
 }
 
 .sub {

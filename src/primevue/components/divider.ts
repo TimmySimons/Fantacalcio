@@ -1,7 +1,7 @@
 export const divider = {
     colorScheme: {
         light: {
-            border: { color: '#d5d5d5' }
+            border: { color: '{gray.200}' }
         }
     }
 };

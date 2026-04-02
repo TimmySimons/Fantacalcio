@@ -5,6 +5,7 @@ import type { AppUserContract } from '../../../model/app-user.contract.ts';
 import { useAdminStore } from '../../../stores/admin.store.ts';
 import { storeToRefs } from 'pinia';
 import SelectablePlayerGroup from '../../../components/admin/SelectablePlayerGroup.vue';
+import { useToast } from 'primevue';
 
 const props = defineProps<{
     manager: AppUserContract;
@@ -14,6 +15,7 @@ const showDialog = defineModel<boolean>({ required: false, default: false });
 
 const adminStore = useAdminStore();
 const { players, managerPlayers } = storeToRefs(adminStore);
+const toast = useToast();
 
 const isLoading = ref(false);
 
@@ -64,6 +66,15 @@ watch(
     { immediate: true }
 );
 
+const search = ref('');
+
+const filterPlayers = (list: typeof players.value) => {
+    const q = search.value.toLowerCase();
+    return (list ?? []).filter((p) =>
+        `${p.first_name} ${p.last_name ?? ''}`.toLowerCase().includes(q)
+    );
+};
+
 const goalKeepers = computed(
     () => players.value?.filter((p) => p.position === PlayerPosition.Goalkeeper)
 );
@@ -82,6 +93,12 @@ const onSave = async () => {
         .updateManagerPlayers(props.manager.id, allSelectedPlayers.value)
         .then(() => adminStore.getManagers());
     showDialog.value = false;
+    toast.add({
+        severity: 'success',
+        summary: 'Saved',
+        detail: `${props.manager.team_name} updated successfully.`,
+        life: 3000
+    });
 };
 </script>
 
@@ -101,28 +118,33 @@ const onSave = async () => {
                     Total players: <span>{{ selectedCount }}</span>
                 </div>
 
+                <IconField class="search">
+                    <InputIcon class="pi pi-search" />
+                    <InputText v-model="search" placeholder="Search players..." />
+                </IconField>
+
                 <div class="content flex col">
                     <SelectablePlayerGroup
                         :title="'Goalkeepers'"
-                        :players="goalKeepers ?? []"
+                        :players="filterPlayers(goalKeepers)"
                         v-model="selectedGoalkeepers"
                     />
 
                     <SelectablePlayerGroup
                         :title="'Defenders'"
-                        :players="defenders ?? []"
+                        :players="filterPlayers(defenders)"
                         v-model="selectedDefenders"
                     />
 
                     <SelectablePlayerGroup
                         :title="'Midfielders'"
-                        :players="midfielders ?? []"
+                        :players="filterPlayers(midfielders)"
                         v-model="selectedMidfielders"
                     />
 
                     <SelectablePlayerGroup
                         :title="'Forwards'"
-                        :players="forwards ?? []"
+                        :players="filterPlayers(forwards)"
                         v-model="selectedForwards"
                     />
                 </div>
@@ -164,5 +186,13 @@ const onSave = async () => {
     font-weight: bold;
     font-size: 14px;
     color: #6c757d;
+}
+
+.search {
+    width: 100%;
+
+    input {
+        width: 100%;
+    }
 }
 </style>

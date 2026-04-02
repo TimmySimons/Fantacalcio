@@ -3,6 +3,7 @@ import { useFootballStore } from '../../stores/football.store.ts';
 import { storeToRefs } from 'pinia';
 import { useFootballScoreStore } from '../../stores/football-scores.store.ts';
 import { computed, watch } from 'vue';
+import { Util } from '../../util.ts';
 
 const props = defineProps<{
     managerId: string;
@@ -30,8 +31,8 @@ const gameweekScore = computed(() => {
 
 <template>
     <div class="scores">
-        <div class="score gw-score">+{{ gameweekScore ? Math.round(gameweekScore) : ' ?' }}</div>
-        <div class="score total-score">{{ totalScore ? Math.round(totalScore) : 0 }}</div>
+        <div class="score gw-score">+{{ gameweekScore ? Util.formatNumberWithDot(Math.round(gameweekScore)) : ' ?' }}</div>
+        <div class="score total-score">{{ totalScore ? Util.formatNumberWithDot(Math.round(totalScore)) : 0 }}</div>
     </div>
 </template>
 

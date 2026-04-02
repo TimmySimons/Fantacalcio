@@ -22,6 +22,8 @@ import Dialog from 'primevue/dialog';
 import Toast from 'primevue/toast';
 import Divider from 'primevue/divider';
 import Fieldset from 'primevue/fieldset';
+import IconField from 'primevue/iconfield';
+import InputIcon from 'primevue/inputicon';
 
 export const primevuePlugin: Plugin = {
     install(app) {
@@ -56,5 +58,7 @@ export const primevuePlugin: Plugin = {
         app.component('Checkbox', Checkbox);
         app.component('Fieldset', Fieldset);
         app.component('Divider', Divider);
+        app.component('IconField', IconField);
+        app.component('InputIcon', InputIcon);
     }
 };

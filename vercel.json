@@ -1,8 +1,0 @@
-{
-  "git": {
-    "deploymentEnabled": {
-      "gh-pages": false
-    }
-  },
-  "ignoreCommand": "git diff --quiet HEAD^ HEAD -- ./api"
-}

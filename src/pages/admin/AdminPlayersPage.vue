@@ -43,6 +43,13 @@ const onNewPlayer = () => {
     player.value = undefined;
     showDialog.value = true;
 };
+
+const search = ref('');
+
+const filterPlayers = (players: typeof goalkeepers.value) => {
+    const q = search.value.toLowerCase();
+    return players.filter((p) => `${p.first_name} ${p.last_name ?? ''}`.toLowerCase().includes(q));
+};
 </script>
 
 <template>
@@ -53,6 +60,11 @@ const onNewPlayer = () => {
                 <Button label="New Player" @click="onNewPlayer" class="new-btn" />
             </div>
         </div>
+        <IconField class="search">
+            <InputIcon class="pi pi-search" />
+            <InputText v-model="search" placeholder="Search players..." />
+        </IconField>
+
         <div class="wrapper inner">
             <PlayerDialog
                 v-model="showDialog"
@@ -63,10 +75,13 @@ const onNewPlayer = () => {
             />
 
             <div v-if="players" class="players">
-                <Fieldset :toggleable="true" :legend="`Goalkeepers (${goalkeepers.length})`">
+                <Fieldset
+                    :toggleable="true"
+                    :legend="`Goalkeepers (${filterPlayers(goalkeepers).length})`"
+                >
                     <div class="flex col gap-4">
                         <PlayerCard
-                            v-for="player in goalkeepers"
+                            v-for="player in filterPlayers(goalkeepers)"
                             :key="player.id"
                             :player="player"
                             @click="onClickPlayer(player.id)"
@@ -76,10 +91,13 @@ const onNewPlayer = () => {
 
                 <Divider type="solid" />
 
-                <Fieldset :toggleable="true" :legend="`Defenders (${defenders.length})`">
+                <Fieldset
+                    :toggleable="true"
+                    :legend="`Defenders (${filterPlayers(defenders).length})`"
+                >
                     <div class="flex col gap-4">
                         <PlayerCard
-                            v-for="player in defenders"
+                            v-for="player in filterPlayers(defenders)"
                             :key="player.id"
                             :player="player"
                             @click="onClickPlayer(player.id)"
@@ -89,10 +107,13 @@ const onNewPlayer = () => {
 
                 <Divider type="solid" />
 
-                <Fieldset :toggleable="true" :legend="`Midfielders (${midfielders.length})`">
+                <Fieldset
+                    :toggleable="true"
+                    :legend="`Midfielders (${filterPlayers(midfielders).length})`"
+                >
                     <div class="flex col gap-4">
                         <PlayerCard
-                            v-for="player in midfielders"
+                            v-for="player in filterPlayers(midfielders)"
                             :key="player.id"
                             :player="player"
                             @click="onClickPlayer(player.id)"
@@ -102,10 +123,13 @@ const onNewPlayer = () => {
 
                 <Divider type="solid" />
 
-                <Fieldset :toggleable="true" :legend="`Forwards (${forwards.length})`">
+                <Fieldset
+                    :toggleable="true"
+                    :legend="`Forwards (${filterPlayers(forwards).length})`"
+                >
                     <div class="flex col gap-4">
                         <PlayerCard
-                            v-for="player in forwards"
+                            v-for="player in filterPlayers(forwards)"
                             :key="player.id"
                             :player="player"
                             @click="onClickPlayer(player.id)"
@@ -126,6 +150,15 @@ const onNewPlayer = () => {
     justify-content: space-between;
 }
 
+.search {
+    width: 100%;
+    margin-bottom: 16px;
+
+    > input {
+        width: 100%;
+    }
+}
+
 .wrapper {
     height: 100%;
     display: flex;
@@ -139,19 +172,6 @@ const onNewPlayer = () => {
         min-height: 0;
         gap: 6px;
         overflow-y: auto;
-    }
-
-    .section-header {
-        font-size: 0.9em;
-        font-weight: bold;
-        position: sticky;
-        top: 0;
-        padding: 0 0 8px 0;
-        background: whitesmoke;
-
-        &:first-child {
-            margin-top: 0;
-        }
     }
 }
 </style>

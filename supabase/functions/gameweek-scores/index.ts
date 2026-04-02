@@ -1,9 +1,24 @@
+import { gqlFetch } from '../_shared/sorare-client.ts';
+
+const GET_GAMEWEEK_SCORES = `
+    query GetGameweekScores($slugs: [String!]!, $gwslug: String!, $position: String!) {
+        football {
+            players(slugs: $slugs) {
+                slug
+                anyGameStats(so5FixtureSlug: $gwslug, last: 1) {
+                    playerGameScore(position: $position) {
+                        position
+                        score
+                    }
+                }
+            }
+        }
+    }
+`;
+
 Deno.serve(async (req) => {
     try {
-        const url = new URL(req.url);
-        const slugs = url.searchParams.get('slugs');
-        const position = url.searchParams.get('position');
-        const gwslug = url.searchParams.get('gwslug');
+        const { slugs, gwslug, position } = await req.json();
 
         if (!slugs || !position || !gwslug) {
             return new Response(JSON.stringify({ error: 'Missing parameters' }), {
@@ -12,34 +27,9 @@ Deno.serve(async (req) => {
             });
         }
 
-        const query = `
-      {
-        football {
-          players(slugs: [${slugs
-              .split(',')
-              .map((s) => `"${s.trim()}"`)
-              .join(', ')}]) {
-            slug
-            anyGameStats(so5FixtureSlug: "${gwslug}", last: 1) {
-              playerGameScore(position: "${position}") {
-                position
-                score
-              }
-            }
-          }
-        }
-      }
-    `;
+        const data = await gqlFetch(GET_GAMEWEEK_SCORES, { slugs, gwslug, position });
 
-        const response = await fetch('https://api.sorare.com/graphql', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query })
-        });
-
-        const data = await response.json();
-
-        return new Response(JSON.stringify(data), {
+        return new Response(JSON.stringify({ data }), {
             headers: { 'Content-Type': 'application/json' }
         });
     } catch (error) {

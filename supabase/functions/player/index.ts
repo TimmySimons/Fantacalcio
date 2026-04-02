@@ -1,7 +1,63 @@
+import { gqlFetch } from '../_shared/sorare-client.ts';
+
+const GET_PLAYER = `
+    query GetPlayer($slug: String!) {
+        football {
+            player(slug: $slug) {
+                displayName
+                abbreviatedName
+                firstName
+                lastName
+                position
+                shirtNumber
+                birthDate
+                height
+                weight
+                country {
+                    name
+                    flagUrl
+                }
+                activeClub {
+                    name
+                    pictureUrl
+                    shortName
+                }
+                squaredPictureUrl
+                so5Scores(last: 5) {
+                    score
+                    decisiveScore {
+                        totalScore
+                    }
+                    game {
+                        date
+                        homeTeam {
+                            name
+                        }
+                        awayTeam {
+                            name
+                            shortName
+                        }
+                    }
+                }
+                futureGames(first: 5) {
+                    edges {
+                        node {
+                            date
+                            awayTeam {
+                                shortName
+                            }
+                        }
+                    }
+                }
+                lastFiveSo5Appearances
+            }
+        }
+    }
+`;
+
 Deno.serve(async (req) => {
     try {
-        const url = new URL(req.url);
-        const slug = url.searchParams.get('slug');
+        const { slug } = await req.json();
 
         if (!slug) {
             return new Response(JSON.stringify({ error: 'Missing slug parameter' }), {
@@ -10,54 +66,9 @@ Deno.serve(async (req) => {
             });
         }
 
-        const query = `
-      {
-        football {
-          player(slug: "${slug}") {
-            displayName
-            abbreviatedName
-            firstName
-            lastName
-            position
-            shirtNumber
-            birthDate
-            height
-            weight
-            country { name flagUrl }
-            activeClub {  name pictureUrl shortName  }
-            squaredPictureUrl
-            so5Scores(last: 5) {
-              score
-              decisiveScore { totalScore }
-              game {
-                date
-                homeTeam { name }
-                awayTeam { name shortName }
-              }
-            }
-            futureGames(first: 5) {
-              edges {
-                node {
-                  date
-                  awayTeam { shortName}
-                }
-              }
-            }
-            lastFiveSo5Appearances
-          }
-        }
-      }
-    `;
+        const data = await gqlFetch(GET_PLAYER, { slug });
 
-        const response = await fetch('https://api.sorare.com/graphql', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ query })
-        });
-
-        const data = await response.json();
-
-        return new Response(JSON.stringify(data), {
+        return new Response(JSON.stringify({ data }), {
             headers: { 'Content-Type': 'application/json' }
         });
     } catch (error) {
