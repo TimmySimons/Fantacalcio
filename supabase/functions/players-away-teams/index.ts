@@ -1,4 +1,5 @@
 import { gqlFetch } from '../_shared/sorare-client.ts';
+import { corsHeaders } from '../_shared/cors.ts';
 
 const GET_PLAYERS_AWAY_TEAMS = `
     query GetPlayersAwayTeams($playerSlugs: [String!]!, $gameweekSlug: String!) {
@@ -22,25 +23,29 @@ const GET_PLAYERS_AWAY_TEAMS = `
 `;
 
 Deno.serve(async (req) => {
+    if (req.method === 'OPTIONS') {
+        return new Response(null, { status: 204, headers: corsHeaders });
+    }
+
     try {
         const { playerSlugs, gameweekSlug } = await req.json();
 
         if (!playerSlugs || !gameweekSlug) {
             return new Response(JSON.stringify({ error: 'Missing parameters' }), {
                 status: 400,
-                headers: { 'Content-Type': 'application/json' }
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             });
         }
 
         const data = await gqlFetch(GET_PLAYERS_AWAY_TEAMS, { playerSlugs, gameweekSlug });
 
         return new Response(JSON.stringify({ data }), {
-            headers: { 'Content-Type': 'application/json' }
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
     } catch (error) {
         return new Response(JSON.stringify({ error: error.message }), {
             status: 500,
-            headers: { 'Content-Type': 'application/json' }
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
     }
 });
