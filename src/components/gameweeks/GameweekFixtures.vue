@@ -79,7 +79,7 @@ defineExpose({ open: onOpen });
             </div>
         </template>
         <div v-if="fixturesLoading" class="fixtures-loading">
-            <ProgressSpinner style="width: 40px; height: 40px" />
+            <i class="pi pi-spin pi-spinner" style="font-size: 24px"></i>
         </div>
         <div v-else-if="sortedGameweekGames.length === 0" class="fixtures-empty">
             No fixtures available
