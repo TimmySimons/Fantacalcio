@@ -36,8 +36,7 @@ const showPlayerDialog = ref(false);
             <div>{{ selectedPlayer.position }}</div>
             <div class="home">{{ selectedPlayer.club_name_short }}</div>
             <div v-if="selectedPlayer.PlayersAwayTeams" class="away">
-                <i class="pi pi-arrows-h" />
-                {{ selectedPlayer.PlayersAwayTeams[0]?.away_team }}
+                <span class="vs">vs.</span> {{ selectedPlayer.PlayersAwayTeams[0]?.away_team }}
             </div>
         </div>
         <div
@@ -105,18 +104,18 @@ const showPlayerDialog = ref(false);
         font-size: 9px;
 
         .away {
-            color: #093400;
             display: flex;
             align-items: center;
             gap: 4px;
-            i {
-                font-size: 11px;
-            }
-            border: 1px solid rgba(15, 39, 0, 0.27);
             padding: 0 6px;
             border-radius: 2px;
             width: fit-content;
             margin-top: 2px;
+            background: rgba(0, 0, 0, 0.2);
+
+            .vs {
+                color: #b4ccae;
+            }
         }
 
         > div {
