@@ -10,6 +10,7 @@ import GameweekSelector from '../components/gameweeks/GameweekSelector.vue';
 import { useFootballScoreStore } from '../stores/football-scores.store.ts';
 import ScoresPill from '../components/gameweeks/ScoresPill.vue';
 import { FootballUtil } from '../FootballUtil.ts';
+import GameweekFixtures from '../components/gameweeks/GameweekFixtures.vue';
 
 const route = useRoute();
 const managerId = computed<string>(() => route.params.id as string);
@@ -115,6 +116,8 @@ const nonFutureGameweeks = computed(() => {
                 :is-loading="isLoading"
                 :show-direct-dialog="true"
             />
+
+            <GameweekFixtures :gameweek="gameweek" />
         </div>
     </div>
 </template>
@@ -158,7 +161,7 @@ const nonFutureGameweeks = computed(() => {
         gap: 12px;
         flex: 1;
         background-color: #f3f3f3;
-        padding: 12px 18px 24px 18px;
+        padding: 12px 18px 12px 18px;
         border-radius: 24px 24px 0 0;
         position: relative;
         z-index: 10;
@@ -202,6 +205,7 @@ const nonFutureGameweeks = computed(() => {
         flex: 1;
     }
 }
+
 .now {
     color: darkred;
     padding: 2px 20px;

@@ -1,5 +1,6 @@
 import type { PlayerPosition } from '../model/player.contract.ts';
 import { supabase } from '../supabase/supabase.ts';
+import type { GetGameweekGamesResponse } from './contracts/gameweek-games.contract.ts';
 import type { GetGameweekScoresResponse } from './contracts/gameweek-scores.contract.ts';
 import type { GetGameweeksResponse } from './contracts/gameweeks.contract.ts';
 import type { GetPlayerResponse } from './contracts/player.contract.ts';
@@ -59,6 +60,20 @@ export class SorareApi {
             .filter((gw) => gw.start_date > (after ?? new Date()));
         console.log('Sorare:', result);
         return result;
+    }
+
+    public static async getGameweekGames(slug: string, fromDate: string, toDate: string) {
+        const data = await invoke<GetGameweekGamesResponse>('gameweek-games', {
+            slug,
+            fromDate,
+            toDate
+        });
+
+        const jupilerProLeagueGames = data.so5.so5Fixture.games.filter(
+            (g) => g.competition.slug === 'jupiler-pro-league'
+        );
+        console.log('Sorare:', jupilerProLeagueGames);
+        return jupilerProLeagueGames;
     }
 
     public static async getPlayersAwayTeams(playerSlugs: string[], gameweekSlug: string) {

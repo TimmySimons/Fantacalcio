@@ -1,5 +1,8 @@
 import { supabase } from '../supabase.ts';
 import type { GameweekContract } from '../../model/gameweek.contract.ts';
+import type { GetGameweekGamesResponse } from '../../sorare/contracts/gameweek-games.contract.ts';
+
+type GameweekGame = GetGameweekGamesResponse['so5']['so5Fixture']['games'][number];
 
 export class GameweekApi {
     public static async getAllGameweeks(): Promise<GameweekContract[]> {
@@ -25,10 +28,7 @@ export class GameweekApi {
     }
 
     public static async deleteGameweek(id: string): Promise<void> {
-        const { error } = await supabase
-            .from('Gameweeks')
-            .delete()
-            .eq('id', id);
+        const { error } = await supabase.from('Gameweeks').delete().eq('id', id);
 
         if (error) throw error;
     }
@@ -47,6 +47,39 @@ export class GameweekApi {
             .from('Gameweeks')
             .update({ scores_published_date: new Date().toISOString() })
             .eq('id', gameweekId);
+
+        if (error) throw error;
+    }
+
+    public static async getGameweekGames(gameweekId: string) {
+        const { data, error } = await supabase
+            .from('GameweekGames')
+            .select('*')
+            .eq('gameweek_id', gameweekId);
+
+        if (error) throw error;
+        return data;
+    }
+
+    public static async saveGameweekGames(gameweekId: string, games: GameweekGame[]) {
+        const rows = games.map((g) => ({
+            gameweek_id: gameweekId,
+            date: g.date,
+            home_team_name: g.homeTeam.shortName,
+            home_team_code: g.homeTeam.code,
+            home_team_picture_url: g.homeTeam.pictureUrl,
+            away_team_name: g.awayTeam.shortName,
+            away_team_code: g.awayTeam.code,
+            away_team_picture_url: g.awayTeam.pictureUrl,
+            status_typed: g.statusTyped,
+            home_score: g.homeScore,
+            away_score: g.awayScore,
+            updated_at: new Date().toISOString()
+        }));
+
+        const { error } = await supabase
+            .from('GameweekGames')
+            .upsert(rows, { onConflict: 'gameweek_id,date,home_team_code,away_team_code' });
 
         if (error) throw error;
     }

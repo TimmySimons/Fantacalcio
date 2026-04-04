@@ -12,6 +12,7 @@ import { useFootballScoreStore } from '../stores/football-scores.store.ts';
 import FootballField from '../components/team/FootballField.vue';
 import ScoresPill from '../components/gameweeks/ScoresPill.vue';
 import { useToast } from 'primevue';
+import GameweekFixtures from '../components/gameweeks/GameweekFixtures.vue';
 
 const footballStore = useFootballStore();
 const {
@@ -48,6 +49,7 @@ watch(gameweek, async () => {
         isLoading.value = true;
         gameweekTeam.value = undefined;
         selectedPlayer.value = undefined;
+
         if (appUser.value) {
             footballStore.getGameweekTeam(gameweek.value.id, appUser.value!.id).then(async () => {
                 if (!gameweekTeam.value) {
@@ -183,6 +185,7 @@ const onClickMove = (action: 'add' | 'remove') => {
     }
 };
 
+const fixturesRef = ref<InstanceType<typeof GameweekFixtures>>();
 const showDrawer = ref(false);
 const pointsView = ref(false);
 
@@ -250,7 +253,13 @@ const loadPreviousTeam = () => {
                 class="flex justify-end toggle buttons"
                 :class="{ current: FootballUtil.isCurrentGameweek(gameweek) }"
             >
-                <template v-if="!isLockedGameweek"> </template>
+                <template v-if="!isLockedGameweek">
+                    <span class="spacer"></span>
+                    <span class="spacer"></span>
+                    <span class="fixtures-inline-btn btn" @click="fixturesRef?.open()"
+                        >Fixtures</span
+                    >
+                </template>
                 <template v-else-if="FootballUtil.isCurrentGameweek(gameweek)" class="current">
                     <span></span>
                     <span class="now">Now playing!</span>
@@ -314,6 +323,7 @@ const loadPreviousTeam = () => {
                     @click="(p) => (selectedPlayer = p)"
                 />
             </div>
+            <GameweekFixtures ref="fixturesRef" :gameweek="gameweek" />
         </div>
     </div>
     <div v-else class="not-setup">
@@ -407,6 +417,14 @@ const loadPreviousTeam = () => {
         &.next {
             font-size: 0.9em;
         }
+
+        &.fixtures-inline-btn {
+            flex: 1;
+            border: none;
+            background: #fff;
+            box-shadow: 0px 3px 6px 0px rgb(0 0 0 / 8%);
+            font-size: 0.9em;
+        }
     }
 }
 
@@ -464,5 +482,10 @@ const loadPreviousTeam = () => {
     i {
         font-size: 1em;
     }
+}
+
+.spacer {
+    flex: 1;
+    display: block;
 }
 </style>
