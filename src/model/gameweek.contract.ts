@@ -23,7 +23,7 @@ export interface createGameweekContract {
 
 export interface GameweekTeamPlayerContract {
     gameweek_id: string;
-    Gameweeks: { scores_published_date: Date | null };
+    Gameweeks: { start_date: Date; scores_published_date: Date | null };
     user_id: string;
     TeamPlayers: { id: string; player_id: string; score: number | null }[];
 }

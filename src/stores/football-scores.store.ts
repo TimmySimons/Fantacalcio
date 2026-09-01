@@ -6,6 +6,7 @@ import type {
 import { FootballApi } from '../supabase/football.api.ts';
 import type { PlayerAverageScoresContract } from '../model/player.contract.ts';
 import { GameweekApi } from '../supabase/football/gameweek.api.ts';
+import { type Season, SeasonUtil } from '../SeasonUtil.ts';
 
 interface FootballScoreState {
     userGameWeeksTeamPlayers: GameweekTeamPlayerContract[] | undefined;
@@ -25,11 +26,15 @@ export const useFootballScoreStore = defineStore('football-scores-store', {
     }),
     getters: {
         totalUserScore() {
-            return (userId: string) => {
+            return (userId: string, season: Season = SeasonUtil.getCurrentSeason()) => {
                 const score = this.allUsersGamesWeekTeamPlayers
                     ?.filter((g) => g.id === userId)
                     .flatMap((g) => g.Teams)
-                    .filter((t) => !!t.Gameweeks.scores_published_date)
+                    .filter(
+                        (t) =>
+                            !!t.Gameweeks.scores_published_date &&
+                            SeasonUtil.isInSeason(t.Gameweeks.start_date, season)
+                    )
                     .flatMap((t) => t.TeamPlayers)
                     .reduce((acc, g) => acc + (g.score ?? 0), 0);
 

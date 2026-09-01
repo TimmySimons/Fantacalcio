@@ -8,6 +8,7 @@ import type { AppUserContract } from '../model/app-user.contract.ts';
 import { GameweekApi } from '../supabase/football/gameweek.api.ts';
 import { SorareApi } from '../sorare/sorare.api.ts';
 import { Util } from '../util.ts';
+import { SeasonUtil } from '../SeasonUtil.ts';
 
 interface FootballState {
     gameweeks: GameweekContract[] | undefined;
@@ -32,11 +33,18 @@ export const useFootballStore = defineStore('football-store', {
     }),
     getters: {
         currentGameweek: (state) => {
+            if (!state.gameweeks) return undefined;
+
             const now = new Date();
-            return state.gameweeks
-                ? state.gameweeks.find((gw) => gw.start_date <= now && gw.end_date >= now) ??
-                      [...state.gameweeks].reverse().find((gw) => gw.end_date < now)
-                : undefined;
+            const currentSeason = SeasonUtil.getCurrentSeason();
+            const seasonGameweeks = state.gameweeks.filter((gw) =>
+                SeasonUtil.isInSeason(gw.start_date, currentSeason)
+            );
+
+            return (
+                seasonGameweeks.find((gw) => gw.start_date <= now && gw.end_date >= now) ??
+                [...seasonGameweeks].reverse().find((gw) => gw.end_date < now)
+            );
         },
         previousGameweek: (state) => {
             if (!state.gameweeks || !state.gameweek) return undefined;
@@ -109,13 +117,17 @@ export const useFootballStore = defineStore('football-store', {
             const chunks = Util.chunkArray(playerSlugs, 11);
 
             for (const slugGroup of chunks) {
-                const awayTeams = await SorareApi.getPlayersAwayTeams(slugGroup, gameweekSlug);
-                await FootballApi.updatePlayersAwayTeam(
-                    gameweekId,
-                    awayTeams
-                        .filter((t: any) => t.away_team)
-                        .map((t: any) => ({ ...t, away_team: t.away_team.name }))
-                );
+                try {
+                    const awayTeams = await SorareApi.getPlayersAwayTeams(slugGroup, gameweekSlug);
+                    await FootballApi.updatePlayersAwayTeam(
+                        gameweekId,
+                        awayTeams
+                            .filter((t: any) => t.away_team)
+                            .map((t: any) => ({ ...t, away_team: t.away_team.name }))
+                    );
+                } catch (error) {
+                    console.warn('Failed to fetch players away teams from Sorare:', error);
+                }
             }
         }
     }

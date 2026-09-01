@@ -12,6 +12,7 @@ import type {
     UpdatePlayerContract
 } from '../model/player.contract.ts';
 import type { AppUserContract } from '../model/app-user.contract.ts';
+import { type Season, SeasonUtil } from '../SeasonUtil.ts';
 
 export class FootballApi {
     public static async getPlayers() {
@@ -235,7 +236,7 @@ export class FootballApi {
                     gameweek_id,
                     user_id,
                     TeamPlayers(id, player_id, score),
-                    Gameweeks (scores_published_date)
+                    Gameweeks (start_date, scores_published_date)
                   `
             )
             .eq('user_id', userId);
@@ -244,7 +245,10 @@ export class FootballApi {
             throw new Error(`Failed to get user gameweek team players: ${error.message}`);
         }
 
-        return data as any as GameweekTeamPlayerContract[];
+        return (data as any[]).map((team) => ({
+            ...team,
+            Gameweeks: { ...team.Gameweeks, start_date: new Date(team.Gameweeks.start_date) }
+        })) as GameweekTeamPlayerContract[];
     }
 
     public static async getAllUsersGameweeksTeamPlayers(): Promise<
@@ -257,7 +261,7 @@ export class FootballApi {
               gameweek_id,
               user_id,
               TeamPlayers (id, player_id, score),
-              Gameweeks (scores_published_date)
+              Gameweeks (start_date, scores_published_date)
             )
           `
         );
@@ -266,7 +270,13 @@ export class FootballApi {
             throw new Error(`Failed to get all users gameweek team players: ${error.message}`);
         }
 
-        return data as any as UserGameweeksTeamPlayersContract[];
+        return (data as any[]).map((user) => ({
+            ...user,
+            Teams: user.Teams.map((team: any) => ({
+                ...team,
+                Gameweeks: { ...team.Gameweeks, start_date: new Date(team.Gameweeks.start_date) }
+            }))
+        })) as UserGameweeksTeamPlayersContract[];
     }
 
     public static async createPlayerAverageScores(
@@ -428,13 +438,14 @@ export class FootballApi {
     }
 
     public static async getTopPlayersByUser(
-        userId: string
+        userId: string,
+        season: Season = SeasonUtil.getCurrentSeason()
     ): Promise<{ player: BasePlayerContract & { picture_url?: string }; totalScore: number }[]> {
         const { data, error } = await supabase
             .from('Teams')
             .select(
                 `
-                Gameweeks(scores_published_date),
+                Gameweeks(start_date, scores_published_date),
                 TeamPlayers(
                     score,
                     Players(id, first_name, last_name, position, picture_url, club_name_short)
@@ -452,7 +463,9 @@ export class FootballApi {
         >();
 
         for (const team of data) {
-            if (!(team.Gameweeks as any)?.scores_published_date) continue;
+            const teamGameweek = team.Gameweeks as any;
+            if (!teamGameweek?.scores_published_date) continue;
+            if (!SeasonUtil.isInSeason(new Date(teamGameweek.start_date), season)) continue;
             for (const tp of team.TeamPlayers as any[]) {
                 if (!tp.Players || tp.score == null) continue;
                 const player = tp.Players;

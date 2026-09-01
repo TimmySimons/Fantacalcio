@@ -2,7 +2,7 @@ import { gqlFetch } from '../_shared/sorare-client.ts';
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type'
 };
 
 const GET_PLAYER = `
@@ -64,6 +64,8 @@ Deno.serve(async (req) => {
     if (req.method === 'OPTIONS') {
         return new Response(null, { status: 204, headers: corsHeaders });
     }
+
+    console.log(req.headers);
 
     try {
         const { slug } = await req.json();

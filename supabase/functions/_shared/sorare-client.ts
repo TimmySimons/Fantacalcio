@@ -7,5 +7,13 @@ export async function gqlFetch<T>(query: string, variables?: Record<string, unkn
         body: JSON.stringify({ query, variables })
     });
     const json = await res.json();
+
+    if (json.errors) {
+        throw new Error(json.errors.map((e: { message: string }) => e.message).join('; '));
+    }
+    if (!json.data) {
+        throw new Error('Sorare API returned no data');
+    }
+
     return json.data;
 }

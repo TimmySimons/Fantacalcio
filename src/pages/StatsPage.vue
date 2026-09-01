@@ -12,6 +12,8 @@ import StatsScoreChart from '../components/stats/StatsScoreChart.vue';
 import StatsGameweekExtremes from '../components/stats/StatsGameweekExtremes.vue';
 import StatsPlayerScoreChart from '../components/stats/StatsPlayerScoreChart.vue';
 import { Util } from '../util.ts';
+import Select from 'primevue/select';
+import { type Season, SeasonUtil } from '../SeasonUtil.ts';
 
 const route = useRoute();
 const router = useRouter();
@@ -39,27 +41,32 @@ const teamName = computed(() =>
     isOwnStats.value ? appUser.value?.team_name : targetManager.value?.team_name
 );
 
+const selectedSeason = ref(SeasonUtil.getCurrentSeason());
+const availableSeasons = computed(() =>
+    SeasonUtil.getSeasonsFromDates(gameweeks.value?.map((gw) => gw.start_date) ?? [])
+);
+
 const allPlayers = ref<
     { player: BasePlayerContract & { picture_url?: string }; totalScore: number }[]
 >([]);
 const loading = ref(true);
 
-async function loadData(userId: string) {
+async function loadData(userId: string, season: Season) {
     loading.value = true;
     footballScoreStore.getUserGameweeksTeamPlayers(userId);
     try {
-        allPlayers.value = await FootballApi.getTopPlayersByUser(userId);
+        allPlayers.value = await FootballApi.getTopPlayersByUser(userId, season);
     } finally {
         loading.value = false;
     }
 }
 
 onMounted(() => {
-    if (targetUserId.value) loadData(targetUserId.value);
+    if (targetUserId.value) loadData(targetUserId.value, selectedSeason.value);
 });
 
-watch(targetUserId, (id) => {
-    if (id) loadData(id);
+watch([targetUserId, selectedSeason], ([id, season]) => {
+    if (id) loadData(id, season);
 });
 
 const bestPlayers = computed(() => allPlayers.value.slice(0, 3));
@@ -68,10 +75,7 @@ const worstPlayers = computed(() => allPlayers.value.slice(-3).reverse());
 const selectedPlayerId = ref<string>('');
 
 watch(allPlayers, (players) => {
-    if (
-        players.length > 0 &&
-        !players.some((p) => p.player.id === selectedPlayerId.value)
-    ) {
+    if (players.length > 0 && !players.some((p) => p.player.id === selectedPlayerId.value)) {
         selectedPlayerId.value = players[0].player.id;
     }
 });
@@ -93,14 +97,16 @@ const selectedPlayerTotalScore = computed(
 const playerChartData = computed(() => {
     const userTeams = userGameWeeksTeamPlayers.value ?? [];
     return (gameweeks.value ?? [])
-        .filter((gw) => !!gw.scores_published_date)
+        .filter(
+            (gw) =>
+                !!gw.scores_published_date &&
+                SeasonUtil.isInSeason(gw.start_date, selectedSeason.value)
+        )
         .sort((a, b) => a.week - b.week)
         .slice(-10)
         .map((gw) => {
             const team = userTeams.find((t) => t.gameweek_id === gw.id);
-            const tp = team?.TeamPlayers.find(
-                (p) => p.player_id === selectedPlayerId.value
-            );
+            const tp = team?.TeamPlayers.find((p) => p.player_id === selectedPlayerId.value);
             return { week: gw.week, score: Math.round(tp?.score ?? 0) };
         });
 });
@@ -108,7 +114,10 @@ const playerChartData = computed(() => {
 const rankedManagers = computed(() =>
     (managers.value ?? [])
         .filter((m) => !m.roles.includes('SUPER_ADMIN'))
-        .map((m) => ({ id: m.id, totalScore: footballScoreStore.totalUserScore(m.id) }))
+        .map((m) => ({
+            id: m.id,
+            totalScore: footballScoreStore.totalUserScore(m.id, selectedSeason.value)
+        }))
         .sort((a, b) => b.totalScore - a.totalScore)
 );
 
@@ -118,14 +127,20 @@ const userRank = computed(() => {
 });
 
 const userTotalScore = computed(() =>
-    Util.formatNumberWithDot(footballScoreStore.totalUserScore(targetUserId.value))
+    Util.formatNumberWithDot(
+        footballScoreStore.totalUserScore(targetUserId.value, selectedSeason.value)
+    )
 );
 
 const allGameweekScores = computed(() => {
     const userTeams = userGameWeeksTeamPlayers.value ?? [];
 
     return (gameweeks.value ?? [])
-        .filter((gw) => !!gw.scores_published_date)
+        .filter(
+            (gw) =>
+                !!gw.scores_published_date &&
+                SeasonUtil.isInSeason(gw.start_date, selectedSeason.value)
+        )
         .sort((a, b) => a.week - b.week)
         .map((gw) => {
             const team = userTeams.find((t) => t.gameweek_id === gw.id);
@@ -161,6 +176,16 @@ const worstGameweek = computed(() =>
             </button>
             <span class="stats-label">Stats</span>
             <span class="team-name">{{ teamName }}</span>
+        </div>
+
+        <div class="season-row">
+            <Select
+                v-model="selectedSeason"
+                :options="availableSeasons"
+                option-label="label"
+                data-key="label"
+                size="small"
+            />
         </div>
 
         <div class="summary-row">
@@ -231,6 +256,14 @@ const worstGameweek = computed(() =>
     font-size: 0.95em;
     font-weight: 600;
     color: #333;
+}
+
+.season-row {
+    display: flex;
+    > * {
+        flex: 1;
+        width: 100%;
+    }
 }
 
 .summary-row {

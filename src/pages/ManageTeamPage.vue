@@ -13,6 +13,7 @@ import FootballField from '../components/team/FootballField.vue';
 import ScoresPill from '../components/gameweeks/ScoresPill.vue';
 import { useToast } from 'primevue';
 import GameweekFixtures from '../components/gameweeks/GameweekFixtures.vue';
+import { SeasonUtil } from '../SeasonUtil.ts';
 
 const footballStore = useFootballStore();
 const {
@@ -39,6 +40,11 @@ footballStore.getAllGameweeks().then(async () => {
         await footballStore.getGameweek(currentGameweek.value.id);
         footballStore.getUserPlayers(currentGameweek.value.id);
     }
+});
+
+const currentSeasonGameweeks = computed(() => {
+    const currentSeason = SeasonUtil.getCurrentSeason();
+    return (gameweeks.value ?? []).filter((gw) => SeasonUtil.isInSeason(gw.start_date, currentSeason));
 });
 
 const selectedPlayer = ref<PlayerContract | undefined>();
@@ -241,7 +247,7 @@ const loadPreviousTeam = () => {
             @click-week="showDrawer = true"
         />
 
-        <GameweekDrawer v-if="gameweeks" :gameweeks="gameweeks" v-model="showDrawer" />
+        <GameweekDrawer v-if="gameweeks" :gameweeks="currentSeasonGameweeks" v-model="showDrawer" />
 
         <div class="unlock" v-if="authStore.hasSuperPowers">
             <span>Unlock</span>

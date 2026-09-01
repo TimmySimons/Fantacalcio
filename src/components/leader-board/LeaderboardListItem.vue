@@ -7,10 +7,12 @@ import { useRouter } from 'vue-router';
 import type { ManagerContract } from '../../model/manager.contract.ts';
 import { computed } from 'vue';
 import { Util } from '../../util.ts';
+import type { Season } from '../../SeasonUtil.ts';
 
 const props = defineProps<{
     place: number;
     manager: ManagerContract;
+    season: Season;
 }>();
 
 const footballScoreStore = useFootballScoreStore();
@@ -39,7 +41,9 @@ const currGwScore = computed<string>(() => {
             <div>{{ manager.name }}</div>
         </div>
         <div class="gw">+{{ currGwScore }}</div>
-        <div class="total">{{ Util.formatNumberWithDot(totalUserScore(manager.id)) }}</div>
+        <div class="total">
+            {{ Util.formatNumberWithDot(totalUserScore(manager.id, season)) }}
+        </div>
         <component :is="CaretIcon" class="svg caret" />
     </div>
 </template>

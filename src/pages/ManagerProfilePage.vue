@@ -11,6 +11,7 @@ import { useFootballScoreStore } from '../stores/football-scores.store.ts';
 import ScoresPill from '../components/gameweeks/ScoresPill.vue';
 import { FootballUtil } from '../FootballUtil.ts';
 import GameweekFixtures from '../components/gameweeks/GameweekFixtures.vue';
+import { SeasonUtil } from '../SeasonUtil.ts';
 
 const route = useRoute();
 const managerId = computed<string>(() => route.params.id as string);
@@ -66,7 +67,14 @@ watch(gameweek, async () => {
 });
 
 const nonFutureGameweeks = computed(() => {
-    return gameweeks.value?.filter((gw) => gw.start_date.getTime() < new Date().getTime()) ?? [];
+    const currentSeason = SeasonUtil.getCurrentSeason();
+    return (
+        gameweeks.value?.filter(
+            (gw) =>
+                gw.start_date.getTime() < new Date().getTime() &&
+                SeasonUtil.isInSeason(gw.start_date, currentSeason)
+        ) ?? []
+    );
 });
 </script>
 

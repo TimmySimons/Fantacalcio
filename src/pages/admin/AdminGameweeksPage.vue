@@ -9,6 +9,8 @@ import Fieldset from 'primevue/fieldset';
 import Divider from 'primevue/divider';
 import GameweekCard from '../../components/gameweeks/GameweekCard.vue';
 import { useToast } from 'primevue';
+import Badge from 'primevue/badge';
+import { SeasonUtil } from '../../SeasonUtil.ts';
 
 const adminStore = useAdminStore();
 const { gameweeks, currentGameweek } = storeToRefs(adminStore);
@@ -20,12 +22,22 @@ const showDialog = ref(false);
 
 const router = useRouter();
 
+const currentSeason = SeasonUtil.getCurrentSeason();
+
 const onSelect = (gameweek: GameweekContract) => {
     router.push({ name: 'AdminGameweek', params: { id: gameweek.id } });
 };
 
-const pastGameweeks = computed(() => gameweeks.value?.filter((gw) => gw.end_date < new Date()));
-const futureGameweeks = computed(() => gameweeks.value?.filter((gw) => gw.end_date >= new Date()));
+const currentSeasonGameweeks = computed(
+    () => gameweeks.value?.filter((gw) => SeasonUtil.isInSeason(gw.start_date, currentSeason))
+);
+
+const pastGameweeks = computed(
+    () => currentSeasonGameweeks.value?.filter((gw) => gw.end_date < new Date())
+);
+const futureGameweeks = computed(
+    () => currentSeasonGameweeks.value?.filter((gw) => gw.end_date >= new Date())
+);
 
 const isLoadingNewGameweeks = ref(false);
 const onLoadGameweeks = async () => {
@@ -46,7 +58,10 @@ const onLoadGameweeks = async () => {
 
 <template>
     <div class="flex-col">
-        <div class="title flex items-center">Gameweeks</div>
+        <div class="title flex items-center">
+            Gameweeks
+            <Badge :value="currentSeason.label" severity="primary" />
+        </div>
 
         <GameweekDialog v-model="showDialog" />
 
@@ -94,7 +109,7 @@ const onLoadGameweeks = async () => {
 
 <style scoped>
 .title {
-    justify-content: space-between;
+    gap: 8px;
 }
 
 .wrapper {
