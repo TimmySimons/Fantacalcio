@@ -48,6 +48,10 @@ const topThree = computed<(ManagerContract | undefined)[]>(() => {
     const validWinners = managersWithScores.value;
     return [validWinners[1], validWinners[0], validWinners[2]];
 });
+
+const allScoresZero = computed(() =>
+    managersWithScores.value.every((m) => m.totalScore === 0)
+);
 </script>
 
 <template>
@@ -63,7 +67,7 @@ const topThree = computed<(ManagerContract | undefined)[]>(() => {
             />
         </div>
 
-        <LeaderboardStage :top-three="topThree" />
+        <LeaderboardStage :top-three="topThree" :hide-details="allScoresZero" />
 
         <div class="list">
             <LeaderboardListItem

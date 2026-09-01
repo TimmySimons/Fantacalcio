@@ -5,6 +5,7 @@ import { Util } from '../../util.ts';
 
 defineProps<{
     topThree: (ManagerContract | undefined)[];
+    hideDetails?: boolean;
 }>();
 </script>
 
@@ -19,7 +20,7 @@ defineProps<{
                 <div class="table"></div>
             </div>
 
-            <div class="text">
+            <div class="text" v-if="!hideDetails">
                 <div class="score">
                     {{ top?.totalScore ? Util.formatNumberWithDot(top.totalScore) : undefined }}
                 </div>
