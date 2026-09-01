@@ -4,7 +4,6 @@ import type { GetGameweekGamesResponse } from './contracts/gameweek-games.contra
 import type { GetGameweekScoresResponse } from './contracts/gameweek-scores.contract.ts';
 import type { GetGameweeksResponse } from './contracts/gameweeks.contract.ts';
 import type { GetPlayerResponse } from './contracts/player.contract.ts';
-import type { GetPlayersAwayTeamsResponse } from './contracts/players-away-teams.contract.ts';
 import type { GetPlayersScoresResponse } from './contracts/scores.contract.ts';
 
 type EdgeFunctionResponse<T> = { data: T };
@@ -76,20 +75,4 @@ export class SorareApi {
         return jupilerProLeagueGames;
     }
 
-    public static async getPlayersAwayTeams(playerSlugs: string[], gameweekSlug: string) {
-        const data = await invoke<GetPlayersAwayTeamsResponse>('players-away-teams', {
-            playerSlugs,
-            gameweekSlug
-        });
-        const result = data.football.players.map((p) => ({
-            sorare_slug: p.slug,
-            away_team: p.anyGamesForFixture
-                .map((e) => ({
-                    name: e.homeTeam.name === p.activeClub.name ? e.awayTeam.name : e.homeTeam.name
-                }))
-                .pop()
-        }));
-        console.log('Sorare:', result);
-        return result;
-    }
 }

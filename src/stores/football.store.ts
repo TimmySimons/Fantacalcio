@@ -6,9 +6,8 @@ import { useAuthStore } from './auth.store.ts';
 import type { PlayerContract } from '../model/player.contract.ts';
 import type { AppUserContract } from '../model/app-user.contract.ts';
 import { GameweekApi } from '../supabase/football/gameweek.api.ts';
-import { SorareApi } from '../sorare/sorare.api.ts';
-import { Util } from '../util.ts';
 import { SeasonUtil } from '../SeasonUtil.ts';
+import { getOrFetchGameweekGames } from '../GameweekGamesUtil.ts';
 
 interface FootballState {
     gameweeks: GameweekContract[] | undefined;
@@ -113,21 +112,34 @@ export const useFootballStore = defineStore('football-store', {
             this.prevGameweekTeam = undefined;
             this.prevGameweekTeam = await FootballApi.getGameweekTeam(gwId, userId);
         },
-        async getPlayersAwayTeams(gameweekId: string, playerSlugs: string[], gameweekSlug: string) {
-            const chunks = Util.chunkArray(playerSlugs, 11);
+        async getPlayersAwayTeams(
+            gameweek: GameweekContract,
+            players: { sorare_slug: string; club_name_short: string | undefined }[]
+        ) {
+            try {
+                const games = await getOrFetchGameweekGames(gameweek);
 
-            for (const slugGroup of chunks) {
-                try {
-                    const awayTeams = await SorareApi.getPlayersAwayTeams(slugGroup, gameweekSlug);
-                    await FootballApi.updatePlayersAwayTeam(
-                        gameweekId,
-                        awayTeams
-                            .filter((t: any) => t.away_team)
-                            .map((t: any) => ({ ...t, away_team: t.away_team.name }))
+                const updates = players.flatMap((p) => {
+                    const game = games.find(
+                        (g) =>
+                            g.home_team_name === p.club_name_short ||
+                            g.away_team_name === p.club_name_short
                     );
-                } catch (error) {
-                    console.warn('Failed to fetch players away teams from Sorare:', error);
+                    if (!game) return [];
+
+                    const away_team =
+                        game.home_team_name === p.club_name_short
+                            ? game.away_team_name
+                            : game.home_team_name;
+
+                    return [{ sorare_slug: p.sorare_slug, away_team }];
+                });
+
+                if (updates.length > 0) {
+                    await FootballApi.updatePlayersAwayTeam(gameweek.id, updates);
                 }
+            } catch (error) {
+                console.warn('Failed to derive players away teams:', error);
             }
         }
     }

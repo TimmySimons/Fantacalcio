@@ -1,14 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import type { GameweekContract } from '../../model/gameweek.contract.ts';
-import { SorareApi } from '../../sorare/sorare.api.ts';
-import { GameweekApi } from '../../supabase/football/gameweek.api.ts';
+import { getOrFetchGameweekGames, type GameweekGame } from '../../GameweekGamesUtil.ts';
 
 const props = defineProps<{ gameweek: GameweekContract | undefined }>();
 
-const GAMES_STALE_MS = 60 * 60 * 1000;
-
-const gameweekGames = ref<Awaited<ReturnType<typeof GameweekApi.getGameweekGames>>>([]);
+const gameweekGames = ref<GameweekGame[]>([]);
 const showFixtures = ref(false);
 const fixturesLoading = ref(false);
 
@@ -21,38 +18,11 @@ const showFixturesButton = computed(() => {
     return new Date(props.gameweek.start_date).getTime() < Date.now();
 });
 
-async function loadGameweekGames(gw: GameweekContract) {
-    const cached = await GameweekApi.getGameweekGames(gw.id);
-    const now = Date.now();
-    const started = new Date(gw.start_date).getTime() < now;
-    const ended = new Date(gw.end_date).getTime() < now;
-
-    if (cached.length > 0) {
-        if (!started || ended) {
-            gameweekGames.value = cached;
-            return;
-        }
-        const lastUpdated = Math.max(...cached.map((g) => new Date(g.updated_at).getTime()));
-        if (now - lastUpdated < GAMES_STALE_MS) {
-            gameweekGames.value = cached;
-            return;
-        }
-    }
-
-    const games = await SorareApi.getGameweekGames(
-        gw.sorare_slug,
-        new Date(gw.start_date).toISOString().split('T')[0],
-        new Date(gw.end_date).toISOString().split('T')[0]
-    );
-    await GameweekApi.saveGameweekGames(gw.id, games);
-    gameweekGames.value = await GameweekApi.getGameweekGames(gw.id);
-}
-
 const onOpen = async () => {
     if (!props.gameweek) return;
     showFixtures.value = true;
     fixturesLoading.value = true;
-    await loadGameweekGames(props.gameweek);
+    gameweekGames.value = await getOrFetchGameweekGames(props.gameweek);
     fixturesLoading.value = false;
 };
 

@@ -56,11 +56,7 @@ watch(gameweek, async () => {
             (p) => !p.PlayersAwayTeams || p.PlayersAwayTeams.length === 0
         );
         if (playersWithoutAwayTeam.length > 0) {
-            await footballStore.getPlayersAwayTeams(
-                gameweek.value.id,
-                playersWithoutAwayTeam.map((p) => p.sorare_slug),
-                gameweek.value.sorare_slug
-            );
+            await footballStore.getPlayersAwayTeams(gameweek.value, playersWithoutAwayTeam);
             footballStore.getGameweekTeam(gameweek.value.id, managerId.value);
         }
     }
