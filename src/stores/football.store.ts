@@ -48,16 +48,22 @@ export const useFootballStore = defineStore('football-store', {
         previousGameweek: (state) => {
             if (!state.gameweeks || !state.gameweek) return undefined;
 
-            const sorted = [...state.gameweeks].sort((a, b) => +a.week - +b.week);
-            const idx = sorted.findIndex((gw) => +gw.week === +state.gameweek!.week);
+            const season = SeasonUtil.getSeasonForDate(new Date(state.gameweek.start_date));
+            const sorted = state.gameweeks
+                .filter((gw) => SeasonUtil.isInSeason(gw.start_date, season))
+                .sort((a, b) => +new Date(a.start_date) - +new Date(b.start_date));
+            const idx = sorted.findIndex((gw) => gw.id === state.gameweek!.id);
 
             return idx > 0 ? sorted[idx - 1] : undefined;
         },
         nextGameweek: (state) => {
             if (!state.gameweeks || !state.gameweek) return undefined;
 
-            const sorted = [...state.gameweeks].sort((a, b) => +a.week - +b.week);
-            const idx = sorted.findIndex((gw) => +gw.week === +state.gameweek!.week);
+            const season = SeasonUtil.getSeasonForDate(new Date(state.gameweek.start_date));
+            const sorted = state.gameweeks
+                .filter((gw) => SeasonUtil.isInSeason(gw.start_date, season))
+                .sort((a, b) => +new Date(a.start_date) - +new Date(b.start_date));
+            const idx = sorted.findIndex((gw) => gw.id === state.gameweek!.id);
 
             return idx >= 0 && idx < sorted.length - 1 ? sorted[idx + 1] : undefined;
         }
