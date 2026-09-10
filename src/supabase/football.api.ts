@@ -188,7 +188,10 @@ export class FootballApi {
     }
 
     public static async getAllManagers(): Promise<AppUserContract[]> {
-        const { data, error } = await supabase.from('Users').select('*, UserPlayers(count)');
+        const { data, error } = await supabase
+            .from('Users')
+            .select('*, UserPlayers(count)')
+            .eq('is_archived', false);
 
         if (error) throw error;
 
