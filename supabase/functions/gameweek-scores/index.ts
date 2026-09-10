@@ -7,14 +7,12 @@ const corsHeaders = {
 
 const GET_GAMEWEEK_SCORES = `
     query GetGameweekScores($slugs: [String!]!, $gwslug: String!, $position: String!) {
-        football {
-            players(slugs: $slugs) {
-                slug
-                anyGameStats(so5FixtureSlug: $gwslug, last: 1) {
-                    playerGameScore(position: $position) {
-                        position
-                        score
-                    }
+        players(slugs: $slugs) {
+            slug
+            anyGameStats(so5FixtureSlug: $gwslug, last: 1) {
+                playerGameScore(position: $position) {
+                    position
+                    score
                 }
             }
         }
@@ -36,9 +34,13 @@ Deno.serve(async (req) => {
             });
         }
 
-        const data = await gqlFetch(GET_GAMEWEEK_SCORES, { slugs, gwslug, position });
+        const data = await gqlFetch<{ players: unknown[] }>(GET_GAMEWEEK_SCORES, {
+            slugs,
+            gwslug,
+            position
+        });
 
-        return new Response(JSON.stringify({ data }), {
+        return new Response(JSON.stringify({ data: { football: { players: data.players } } }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
     } catch (error) {

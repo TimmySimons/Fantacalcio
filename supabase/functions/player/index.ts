@@ -6,9 +6,9 @@ const corsHeaders = {
 };
 
 const GET_PLAYER = `
-    query GetPlayer($slugs: [String!]!) {
-        football {
-            players(slugs: $slugs) {
+    query GetPlayer($slug: String!) {
+        anyPlayer(slug: $slug) {
+            ... on Player {
                 displayName
                 abbreviatedName
                 firstName
@@ -75,19 +75,9 @@ Deno.serve(async (req) => {
             });
         }
 
-        const data = await gqlFetch<{ football: { players: unknown[] } }>(GET_PLAYER, {
-            slugs: [slug]
-        });
-        const player = data.football.players[0];
+        const data = await gqlFetch<{ anyPlayer: unknown }>(GET_PLAYER, { slug });
 
-        if (!player) {
-            return new Response(JSON.stringify({ error: `Player not found: ${slug}` }), {
-                status: 404,
-                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            });
-        }
-
-        return new Response(JSON.stringify({ data: { football: { player } } }), {
+        return new Response(JSON.stringify({ data: { football: { player: data.anyPlayer } } }), {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         });
     } catch (error) {
