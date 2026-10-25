@@ -13,6 +13,7 @@ import type {
 } from '../model/player.contract.ts';
 import type { AppUserContract } from '../model/app-user.contract.ts';
 import { type Season, SeasonUtil } from '../SeasonUtil.ts';
+import { FootballUtil } from '../FootballUtil.ts';
 
 export class FootballApi {
     public static async getPlayers() {
@@ -392,10 +393,10 @@ export class FootballApi {
     public static async getPreviousGameweekTeam(
         userId: string,
         previousGameweekId: string
-    ): Promise<{ id: string; playerIds: string[] } | undefined> {
+    ): Promise<{ id: string; players: Pick<BasePlayerContract, 'id' | 'position'>[] } | undefined> {
         const { data, error } = await supabase
             .from('Teams')
-            .select('id, TeamPlayers(player_id)')
+            .select('id, TeamPlayers(player:Players(id, position))')
             .eq('gameweek_id', previousGameweekId)
             .eq('user_id', userId)
             .maybeSingle();
@@ -405,7 +406,7 @@ export class FootballApi {
 
         return {
             id: data.id,
-            playerIds: data.TeamPlayers.map((tp) => tp.player_id)
+            players: data.TeamPlayers.map((tp: any) => tp.player).filter(Boolean)
         };
     }
 
@@ -499,12 +500,21 @@ export class FootballApi {
 
                 console.log(`Auto-assigning team for user ${userId}...`, prevTeam);
 
-                if (prevTeam && prevTeam.playerIds.length > 0) {
+                if (prevTeam && prevTeam.players.length > 0) {
                     await this.createGameweekTeam(gameweekId, userId);
-                    const newTeamData = await this.getGameweekTeam(gameweekId, userId);
+                    const team = await this.getGameweekTeam(gameweekId, userId);
+                    if (!team?.id) continue;
 
-                    if (newTeamData?.id) {
-                        await this.addTeamPlayers(newTeamData.id, prevTeam.playerIds);
+                    const topUpIds = FootballUtil.getTopUpPlayers(
+                        team.team_players,
+                        prevTeam.players
+                    );
+                    if (team.team_players.length + topUpIds.length < 11) {
+                        console.warn(`Could not complete a legal lineup for user ${userId}`);
+                    }
+
+                    if (topUpIds.length > 0) {
+                        await this.addTeamPlayers(team.id, topUpIds);
                         assigned++;
                     }
                 }

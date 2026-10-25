@@ -7,6 +7,7 @@ import type { PlayerContract } from '../model/player.contract.ts';
 import type { AppUserContract } from '../model/app-user.contract.ts';
 import { GameweekApi } from '../supabase/football/gameweek.api.ts';
 import { SeasonUtil } from '../SeasonUtil.ts';
+import { FootballUtil } from '../FootballUtil.ts';
 import { getOrFetchGameweekGames } from '../GameweekGamesUtil.ts';
 
 interface FootballState {
@@ -48,13 +49,7 @@ export const useFootballStore = defineStore('football-store', {
         previousGameweek: (state) => {
             if (!state.gameweeks || !state.gameweek) return undefined;
 
-            const season = SeasonUtil.getSeasonForDate(new Date(state.gameweek.start_date));
-            const sorted = state.gameweeks
-                .filter((gw) => SeasonUtil.isInSeason(gw.start_date, season))
-                .sort((a, b) => +new Date(a.start_date) - +new Date(b.start_date));
-            const idx = sorted.findIndex((gw) => gw.id === state.gameweek!.id);
-
-            return idx > 0 ? sorted[idx - 1] : undefined;
+            return FootballUtil.getPreviousGameweek(state.gameweeks, state.gameweek);
         },
         nextGameweek: (state) => {
             if (!state.gameweeks || !state.gameweek) return undefined;

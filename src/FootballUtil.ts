@@ -1,5 +1,12 @@
 import type { GameweekContract } from './model/gameweek.contract.ts';
-import { type PlayerContract, PlayerPosition } from './model/player.contract.ts';
+import {
+    type BasePlayerContract,
+    type PlayerContract,
+    PlayerPosition
+} from './model/player.contract.ts';
+import { SeasonUtil } from './SeasonUtil.ts';
+
+type LineupPlayer = Pick<BasePlayerContract, 'id' | 'position'>;
 
 export class FootballUtil {
     public static isLockedGameweek(gameweek: GameweekContract | undefined): boolean {
@@ -21,9 +28,50 @@ export class FootballUtil {
         return now >= start && now <= end;
     }
 
+    public static getPreviousGameweek<T extends Pick<GameweekContract, 'id' | 'start_date'>>(
+        gameweeks: T[],
+        gameweek: T
+    ): T | undefined {
+        const season = SeasonUtil.getSeasonForDate(new Date(gameweek.start_date));
+        const sorted = gameweeks
+            .filter((gw) => SeasonUtil.isInSeason(new Date(gw.start_date), season))
+            .sort((a, b) => +new Date(a.start_date) - +new Date(b.start_date));
+        const idx = sorted.findIndex((gw) => gw.id === gameweek.id);
+
+        return idx > 0 ? sorted[idx - 1] : undefined;
+    }
+
+    // Picks players from `candidates` (in order) to complete `current` without breaking formation rules.
+    public static getTopUpPlayers(current: LineupPlayer[], candidates: LineupPlayer[]): string[] {
+        const lineup = [...current];
+        const remaining = candidates.filter((c) => !lineup.some((p) => p.id === c.id));
+        const min = {
+            [PlayerPosition.Goalkeeper]: 1,
+            [PlayerPosition.Defender]: 3,
+            [PlayerPosition.Midfielder]: 2,
+            [PlayerPosition.Forward]: 1
+        };
+        const isBelowMin = (pos: PlayerPosition) =>
+            lineup.filter((p) => p.position === pos).length < min[pos];
+
+        // First fill positions below their minimum, then any position that still fits
+        for (const pass of [(c: LineupPlayer) => isBelowMin(c.position), () => true]) {
+            for (const candidate of [...remaining]) {
+                if (lineup.length >= 11) break;
+                if (!pass(candidate)) continue;
+                if (FootballUtil.isSelectedBenchPlayerDisabled(lineup, candidate)) continue;
+
+                lineup.push(candidate);
+                remaining.splice(remaining.indexOf(candidate), 1);
+            }
+        }
+
+        return lineup.slice(current.length).map((p) => p.id);
+    }
+
     public static isSelectedBenchPlayerDisabled = (
-        playersOnField: PlayerContract[] | undefined,
-        selectedPlayer: PlayerContract | undefined
+        playersOnField: LineupPlayer[] | undefined,
+        selectedPlayer: LineupPlayer | undefined
     ): boolean => {
         if (!playersOnField || !selectedPlayer) return false;
 

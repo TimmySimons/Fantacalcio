@@ -11,6 +11,7 @@ import type { AppUserContract } from '../model/app-user.contract.ts';
 import { GameweekApi } from '../supabase/football/gameweek.api.ts';
 import { useAuthStore } from './auth.store.ts';
 import { SorareApi } from '../sorare/sorare.api.ts';
+import { FootballUtil } from '../FootballUtil.ts';
 
 export const useAdminStore = defineStore('admin-store', {
     state: (): {
@@ -152,14 +153,11 @@ export const useAdminStore = defineStore('admin-store', {
                 throw new Error('Gameweek data not loaded');
             }
 
-            const sorted = [...this.gameweeks].sort((a, b) => +a.week - +b.week);
-            const currentIdx = sorted.findIndex((gw) => +gw.week === +this.gameweek!.week);
-
-            if (currentIdx <= 0) {
+            const previousGameweek = FootballUtil.getPreviousGameweek(this.gameweeks, this.gameweek);
+            if (!previousGameweek) {
                 return { assigned: 0, failed: 0 };
             }
 
-            const previousGameweek = sorted[currentIdx - 1];
             return await FootballApi.autoAssignPreviousTeams(this.gameweek.id, previousGameweek.id);
         },
         async loadSorareGameweeks(): Promise<number> {
